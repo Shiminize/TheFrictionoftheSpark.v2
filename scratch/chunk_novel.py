@@ -30,12 +30,36 @@ def chunk_html(html_file, output_js):
     
     book_content = []
     
+    # Load Chinese Translation for Batch 1 (Intro & Chapter 1)
+    cn_file_1 = '/Users/decepticonmanager/Book Reader/Content/beneath_manado/zh-CN/chapter_1.html'
+    cn_intro = ""
+    cn_ch_paras = {1: []}
+    if os.path.exists(cn_file_1):
+        with open(cn_file_1, 'r', encoding='utf-8') as f:
+            cn_full = f.read()
+            cn_marker = r'<h3>第一章：“丑陋”的生物学</h3>'
+            if cn_marker in cn_full:
+                cn_parts = re.split(cn_marker, cn_full)
+                cn_intro = cn_parts[0].strip()
+                if len(cn_parts) > 1:
+                    cn_ch_paras[1] = re.findall(r'<p>.*?</p>', cn_parts[1], re.DOTALL)
+
+    # Load Chinese Translation for all remaining chapters (2-10)
+    for ch_num in range(2, 11):
+        cn_file = f'/Users/decepticonmanager/Book Reader/Content/beneath_manado/zh-CN/chapter_{ch_num}.html'
+        if os.path.exists(cn_file):
+            with open(cn_file, 'r', encoding='utf-8') as f:
+                cn_full = f.read()
+                cn_ch_paras[ch_num] = re.findall(r'<p>.*?</p>', cn_full, re.DOTALL)
+
     # 0. COVER
     book_content.append({
         "chapter": 0,
         "isChapterStart": True,
         "title": "COVER",
-        "content": "<div class='cover-wrapper'><img src='src/assets/images/cover.jpg' alt='Beneath Manado Cover' class='book-cover-fullscreen'></div>"
+        "title_cn": "封面",
+        "content": "<div class='cover-wrapper'><img src='src/assets/images/cover.jpg' alt='Beneath Manado Cover' class='book-cover-fullscreen'></div>",
+        "content_cn": "<div class='cover-wrapper'><img src='src/assets/images/cover.jpg' alt='Beneath Manado Cover' class='book-cover-fullscreen'></div>"
     })
 
     # Preamble (Page 1)
@@ -44,7 +68,9 @@ def chunk_html(html_file, output_js):
             "chapter": 1,
             "isChapterStart": True,
             "title": "Beneath Manado (Intro)",
-            "content": parts[0].strip()
+            "title_cn": "美娜多之下 (引言)",
+            "content": parts[0].strip(),
+            "content_cn": cn_intro if cn_intro else parts[0].strip()
         })
 
     paras_per_page = 10
@@ -52,25 +78,60 @@ def chunk_html(html_file, output_js):
     for i, part_content in enumerate(parts[1:]):
         ch_num = i + 1
         ch_title = markers[i][2]
+        ch_title_cn = markers[i][2]
         
+        # Mapping CN titles
+        cn_titles = {
+            1: "第一章：“丑陋”的生物学",
+            2: "第二章：数字滤镜",
+            3: "第三章：“同卵”切口",
+            4: "第四章：手术刀与石头",
+            5: "第五章：蚕丝收成",
+            6: "第六章：领地",
+            7: "第七章：脓",
+            8: "第八章：一模一样",
+            9: "第九章：两半",
+            10: "第十章：还款"
+        }
+        if ch_num in cn_titles:
+            ch_title_cn = cn_titles[ch_num]
+
         # Split by <p> tag
         paras = re.findall(r'<p>.*?</p>', part_content, re.DOTALL)
-        if not paras:
-            # Fallback for non-p tagged content if any
-            paras = [part_content]
-
-        # Chunk paragraphs
-        chunks = [paras[x:x+paras_per_page] for x in range(0, len(paras), paras_per_page)]
         
+        # Split CN paras
+        current_cn_paras = cn_ch_paras.get(ch_num, [])
+
+        # Chunk EN paragraphs into pages of paras_per_page
+        chunks = [paras[x:x+paras_per_page] for x in range(0, len(paras), paras_per_page)]
+        n_pages = len(chunks)
+
+        # Proportionally distribute CN paragraphs across the same number of EN pages
+        # so every page has CN content even when translation has fewer <p> tags
+        cn_chunks = []
+        if current_cn_paras and n_pages > 0:
+            cn_total = len(current_cn_paras)
+            for j in range(n_pages):
+                start = int(j * cn_total / n_pages)
+                end = int((j + 1) * cn_total / n_pages)
+                cn_chunks.append(current_cn_paras[start:end])
+        else:
+            cn_chunks = [[] for _ in range(n_pages)]
+
         for j, chunk in enumerate(chunks):
-            page_title = f"{ch_title} ({j+1}/{len(chunks)})"
+            page_title = f"{ch_title} ({j+1}/{n_pages})"
+            page_title_cn = f"{ch_title_cn} ({j+1}/{n_pages})"
+
             page_content = "".join(chunk)
-            
+            page_content_cn = "".join(cn_chunks[j]) if cn_chunks[j] else ""
+
             book_content.append({
                 "chapter": ch_num,
                 "isChapterStart": (j == 0),
-                "title": page_title if len(chunks) > 1 else ch_title,
-                "content": page_content
+                "title": page_title if n_pages > 1 else ch_title,
+                "title_cn": page_title_cn if n_pages > 1 else ch_title_cn,
+                "content": page_content,
+                "content_cn": page_content_cn
             })
 
     # Write to data.js
