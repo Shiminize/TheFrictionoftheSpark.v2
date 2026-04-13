@@ -116,6 +116,11 @@ window.PocketReaderLogic = (function () {
             pageDiv.classList.add('slide-prev');
         }
 
+        // 2b. Check if Cover
+        if (title === 'COVER') {
+            pageDiv.classList.add('page-cover');
+        }
+
         // 3. Inject Content
         pageDiv.innerHTML = `
         <div class="page-content">
@@ -272,22 +277,24 @@ window.PocketReaderLogic = (function () {
         dom.tocList.innerHTML = '';
 
         bookContent.forEach((chapter, index) => {
-            const li = document.createElement('li');
-            // Use localized title
-            let title;
-            if (state.lang === 'cn') {
-                title = chapter.title_cn || chapter.title;
-            } else if (state.lang === 'id') {
-                title = chapter.title_id || chapter.title;
-            } else if (state.lang === 'fr') {
-                title = chapter.title_fr || chapter.title;
-            } else {
-                title = chapter.title;
-            }
-            li.textContent = title;
+            if (chapter.isChapterStart) {
+                const li = document.createElement('li');
+                // Use localized title
+                let title;
+                if (state.lang === 'cn') {
+                    title = chapter.title_cn || chapter.title;
+                } else if (state.lang === 'id') {
+                    title = chapter.title_id || chapter.title;
+                } else if (state.lang === 'fr') {
+                    title = chapter.title_fr || chapter.title;
+                } else {
+                    title = chapter.title;
+                }
+                li.textContent = title;
 
-            li.addEventListener('click', () => jumpToChapter(index + 1));
-            dom.tocList.appendChild(li);
+                li.addEventListener('click', () => jumpToChapter(index + 1));
+                dom.tocList.appendChild(li);
+            }
         });
     }
 

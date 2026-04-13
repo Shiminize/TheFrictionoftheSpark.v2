@@ -129,6 +129,41 @@ body {
     }
 }
 
+/* Full Bleed Cover Extension */
+.page.page-cover {
+    max-width: none;
+    height: 100dvh;
+    background-color: #000; /* Horizon/Cinematic black */
+}
+
+.page.page-cover .page-content {
+    padding: 0;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    max-width: none;
+}
+
+.page.page-cover .page-header,
+.page.page-cover .page-footer {
+    display: none; /* Hide UI clutter on cover */
+}
+
+.page.page-cover .page-text {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.book-cover-fullscreen {
+    width: 100%;
+    height: 100dvh;
+    object-fit: cover;
+    display: block;
+    animation: fadeIn 1.2s ease-in-out forwards;
+}
+
 .page-header {
     text-align: center;
     margin-bottom: 20px;
@@ -152,6 +187,8 @@ body {
     line-height: 1.8;
     color: var(--text-color);
     text-align: left;
+    overflow-wrap: break-word;
+    word-break: break-all;
 
     /* Remove internal scroll */
     overflow-y: visible;
