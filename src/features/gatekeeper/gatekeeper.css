@@ -28,10 +28,10 @@
 }
 
 .login-card h2 {
-    font-family: 'Merriweather', serif;
+    font-family: var(--font-body);
     font-weight: 300;
     font-size: 1.5rem;
-    color: var(--text-main);
+    color: var(--text-color);
     margin-bottom: 2rem;
     letter-spacing: 1px;
 }
@@ -47,16 +47,21 @@
     border: none;
     border-bottom: 1px solid var(--text-muted);
     padding: 0.8rem 0;
-    font-family: 'Work Sans', sans-serif;
+    font-family: var(--font-ui);
     font-size: 1rem;
-    color: var(--text-main);
+    color: var(--text-color);
     text-align: center;
     outline: none;
     transition: border-color 0.3s ease;
 }
 
 #gate-password:focus {
-    border-bottom-color: var(--color-evergreen);
+    border-bottom-color: var(--focus-ring);
+}
+
+#gate-password:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 6px;
 }
 
 #gate-password::placeholder {
@@ -65,19 +70,20 @@
 }
 
 .gate-submit {
-    background: var(--color-evergreen);
-    color: #ffffff;
+    min-height: 44px;
+    background: var(--interactive-main);
+    color: var(--interactive-text);
     border: none;
     padding: 10px 30px;
-    border-radius: 20px;
-    font-family: 'Work Sans', sans-serif;
+    border-radius: 4px;
+    font-family: var(--font-ui);
     font-weight: 500;
     cursor: pointer;
     transition: transform 0.2s ease, background 0.2s ease;
 }
 
 .gate-submit:hover {
-    background: #2a3d34;
+    background: var(--interactive-hover);
     transform: translateY(-2px);
 }
 

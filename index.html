@@ -3,24 +3,28 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" id="meta-theme-color" content="#efe8d9">
-    <title id="dynamic-title">Beneath Manado | Pocket Reader</title>
-    <meta name="description" content="A psychological horror novel about identical twins, genetic debt, and the cost of beauty.">
+    <title id="dynamic-title">The Friction of the Spark | Pocket Reader</title>
+    <meta name="description"
+        content="A dark romantic suspense tragedy about control, survival, grief, and the cost of choosing friction over silence.">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://shiminize.github.io/pocket-reader/">
-    <meta property="og:title" content="Beneath Manado | Pocket Reader">
-    <meta property="og:description" content="A psychological horror novel about identical twins, genetic debt, and the cost of beauty.">
-    <meta property="og:image" content="https://shiminize.github.io/pocket-reader/src/assets/images/cover.jpg">
+    <meta property="og:url" content="https://shiminize.github.io/TheFrictionoftheSpark.v2/">
+    <meta property="og:title" content="The Friction of the Spark | Pocket Reader">
+    <meta property="og:description"
+        content="A dark romantic suspense tragedy about control, survival, grief, and the cost of choosing friction over silence.">
+    <meta property="og:image" content="https://shiminize.github.io/TheFrictionoftheSpark.v2/src/assets/images/cover.jpg">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://shiminize.github.io/pocket-reader/">
-    <meta property="twitter:title" content="Beneath Manado | Pocket Reader">
-    <meta property="twitter:description" content="A psychological horror novel about identical twins, genetic debt, and the cost of beauty.">
-    <meta property="twitter:image" content="https://shiminize.github.io/pocket-reader/src/assets/images/cover.jpg">
+    <meta property="twitter:url" content="https://shiminize.github.io/TheFrictionoftheSpark.v2/">
+    <meta property="twitter:title" content="The Friction of the Spark | Pocket Reader">
+    <meta property="twitter:description"
+        content="A dark romantic suspense tragedy about control, survival, grief, and the cost of choosing friction over silence.">
+    <meta property="twitter:image"
+        content="https://shiminize.github.io/TheFrictionoftheSpark.v2/src/assets/images/cover.jpg">
 
     <!-- PWA Manifest -->
     <link rel="icon" href="favicon.ico" type="image/x-icon">
@@ -75,7 +79,8 @@
 
     <!-- Settings Overlay -->
     <!-- Book Menu Tag -->
-    <div id="menu-tag" class="menu-tag">
+    <button id="menu-tag" class="menu-tag" type="button" aria-label="Open settings" aria-controls="settings-drawer"
+        aria-expanded="false">
         <div class="menu-tag-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="3" y1="12" x2="21" y2="12" />
@@ -83,27 +88,20 @@
                 <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
         </div>
-    </div>
+    </button>
 
     <!-- Settings Drawer -->
-    <div id="settings-overlay" class="settings-overlay"></div>
-    <div id="settings-drawer" class="settings-drawer">
-        <h3>Settings</h3>
-        <div class="setting-group">
-            <label>Language / 语言</label>
-            <div class="theme-toggles">
-                <button class="theme-btn lang-btn active" data-lang="en">EN</button>
-                <button class="theme-btn lang-btn" data-lang="cn">中文</button>
-                <button class="theme-btn lang-btn" data-lang="id">ID</button>
-                <button class="theme-btn lang-btn" data-lang="fr">FR</button>
-            </div>
-        </div>
-
+    <div id="settings-overlay" class="settings-overlay" aria-hidden="true"></div>
+    <div id="settings-drawer" class="settings-drawer" role="dialog" aria-labelledby="settings-title" aria-hidden="true"
+        inert>
+        <h3 id="settings-title">Settings</h3>
         <div class="setting-group">
             <label>Theme</label>
             <div class="theme-toggles">
                 <button class="theme-btn light active" data-theme="light">Antique</button>
+                <button class="theme-btn paper" data-theme="paper">Paper</button>
                 <button class="theme-btn dark" data-theme="dark">Dark</button>
+                <button class="theme-btn contrast" data-theme="contrast">Contrast</button>
             </div>
         </div>
 

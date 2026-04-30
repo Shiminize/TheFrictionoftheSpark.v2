@@ -1,5 +1,10 @@
 // --- STATE MANAGEMENT ---
 window.PocketReaderLogic = (function () {
+    const SUPPORTED_THEMES = new Set(['light', 'paper', 'dark', 'contrast']);
+    const SUPPORTED_LANGS = new Set(['en']);
+    const HTML_LANGS = {
+        en: 'en'
+    };
 
     const state = {
         currentChapter: 1, // 1-based index
@@ -34,17 +39,14 @@ window.PocketReaderLogic = (function () {
         }
 
         loadProgress();
-        renderChapter('none'); // Initial render, no animation
-        setupEventListeners();
         applyTheme(state.theme);
         applyFontSize(state.fontSize);
+        applyDocumentLanguage(state.lang);
+        renderChapter('none'); // Initial render, no animation
+        setupEventListeners();
         updateLangBtns(state.lang); // Visual update
         buildTOC();
-
-        // Track initial progress
-        trackReadingProgress();
-
-        console.log("Pocket Reader Initialized (Slide Engine + i18n)");
+        updateDisplay();
     }
 
     // --- ANALYTICS HELPER ---
@@ -71,20 +73,7 @@ window.PocketReaderLogic = (function () {
         trackReadingProgress();
 
         // Determine Content Language
-        let title, content;
-        if (state.lang === 'cn') {
-            title = chapterData.title_cn || chapterData.title;
-            content = chapterData.content_cn || chapterData.content;
-        } else if (state.lang === 'id') {
-            title = chapterData.title_id || chapterData.title;
-            content = chapterData.content_id || chapterData.content;
-        } else if (state.lang === 'fr') {
-            title = chapterData.title_fr || chapterData.title;
-            content = chapterData.content_fr || chapterData.content;
-        } else {
-            title = chapterData.title;
-            content = chapterData.content;
-        }
+        let { title, content } = getLocalizedChapter(chapterData);
 
         // --- PARAGRAPH PROCESSING ---
         // Convert double newlines to <p> tags, and single newlines to <br> if they exist
@@ -128,7 +117,7 @@ window.PocketReaderLogic = (function () {
                 ${chapterData.cover && state.currentChapter === 1 ? `<img src="${chapterData.cover}" class="cover-img" alt="Cover">` : ''}
                 <h1>${title}</h1>
             </div>
-            <div class="page-text">
+            <div class="page-text" lang="${getHtmlLang(state.lang)}">
                 ${content}
             </div>
             <div class="page-footer">
@@ -175,11 +164,14 @@ window.PocketReaderLogic = (function () {
     }
 
     function setLanguage(lang) {
+        lang = normalizeLang(lang);
         if (state.lang === lang) return;
         state.lang = lang;
+        applyDocumentLanguage(lang);
         updateLangBtns(lang);
         renderChapter('none'); // Re-render current chapter in new language
         buildTOC(); // Re-build TOC in new language
+        updateDisplay();
         saveProgress();
     }
 
@@ -189,16 +181,7 @@ window.PocketReaderLogic = (function () {
         const bookContent = PocketReader.bookContent;
         // Localized Title from Data
         const chapterData = bookContent[state.currentChapter - 1];
-        let partLabel;
-        if (state.lang === 'cn') {
-            partLabel = chapterData.title_cn || chapterData.title;
-        } else if (state.lang === 'id') {
-            partLabel = chapterData.title_id || chapterData.title;
-        } else if (state.lang === 'fr') {
-            partLabel = chapterData.title_fr || chapterData.title;
-        } else {
-            partLabel = chapterData.title;
-        }
+        const { title: partLabel } = getLocalizedChapter(chapterData);
         dom.pageDisplay.textContent = partLabel;
 
         const total = bookContent.length;
@@ -211,8 +194,13 @@ window.PocketReaderLogic = (function () {
         // Update Active TOC
         const tocItems = document.querySelectorAll('.toc-list li');
         tocItems.forEach((item, idx) => {
-            if (idx === state.currentChapter - 1) item.classList.add('active');
-            else item.classList.remove('active');
+            if (idx === state.currentChapter - 1) {
+                item.classList.add('active');
+                item.setAttribute('aria-current', 'page');
+            } else {
+                item.classList.remove('active');
+                item.removeAttribute('aria-current');
+            }
         });
     }
 
@@ -223,8 +211,8 @@ window.PocketReaderLogic = (function () {
                 const parsed = JSON.parse(saved);
                 state.currentChapter = parsed.currentChapter || 1;
                 state.fontSize = parsed.fontSize || 18;
-                state.theme = parsed.theme || 'light';
-                state.lang = parsed.lang || 'en'; // Default to EN
+                state.theme = normalizeTheme(parsed.theme);
+                state.lang = normalizeLang(parsed.lang);
 
                 dom.fontSlider.value = state.fontSize;
                 updateThemeBtns(state.theme);
@@ -245,6 +233,7 @@ window.PocketReaderLogic = (function () {
     }
 
     function applyTheme(themeName) {
+        themeName = normalizeTheme(themeName);
         document.documentElement.setAttribute('data-theme', themeName);
         state.theme = themeName;
         updateThemeBtns(themeName);
@@ -272,6 +261,29 @@ window.PocketReaderLogic = (function () {
         saveProgress();
     }
 
+    function normalizeTheme(themeName) {
+        return SUPPORTED_THEMES.has(themeName) ? themeName : 'light';
+    }
+
+    function normalizeLang(lang) {
+        return SUPPORTED_LANGS.has(lang) ? lang : 'en';
+    }
+
+    function getHtmlLang(lang) {
+        return HTML_LANGS[normalizeLang(lang)];
+    }
+
+    function applyDocumentLanguage(lang) {
+        document.documentElement.lang = getHtmlLang(lang);
+    }
+
+    function getLocalizedChapter(chapterData) {
+        return {
+            title: chapterData.title,
+            content: chapterData.content
+        };
+    }
+
     function buildTOC() {
         const bookContent = PocketReader.bookContent;
         dom.tocList.innerHTML = '';
@@ -279,20 +291,18 @@ window.PocketReaderLogic = (function () {
         bookContent.forEach((chapter, index) => {
             if (chapter.isChapterStart) {
                 const li = document.createElement('li');
-                // Use localized title
-                let title;
-                if (state.lang === 'cn') {
-                    title = chapter.title_cn || chapter.title;
-                } else if (state.lang === 'id') {
-                    title = chapter.title_id || chapter.title;
-                } else if (state.lang === 'fr') {
-                    title = chapter.title_fr || chapter.title;
-                } else {
-                    title = chapter.title;
-                }
+                const { title } = getLocalizedChapter(chapter);
                 li.textContent = title;
+                li.tabIndex = 0;
+                li.setAttribute('role', 'button');
 
                 li.addEventListener('click', () => jumpToChapter(index + 1));
+                li.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        jumpToChapter(index + 1);
+                    }
+                });
                 dom.tocList.appendChild(li);
             }
         });
@@ -307,21 +317,18 @@ window.PocketReaderLogic = (function () {
 
         // Keyboard Nav
         document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && dom.settingsDrawer.classList.contains('open')) {
+                closeMenu();
+                return;
+            }
+
+            if (dom.settingsDrawer.classList.contains('open') || e.target.tagName === 'INPUT') {
+                return;
+            }
+
             if (e.key === 'ArrowRight') nextChapter();
             if (e.key === 'ArrowLeft') prevChapter();
         });
-
-        // Settings
-        function openMenu() {
-            dom.settingsDrawer.classList.add('open');
-            dom.settingsOverlay.classList.add('visible');
-        }
-
-        // Global close menu function for reuse
-        window.closeMenu = function () {
-            dom.settingsDrawer.classList.remove('open');
-            dom.settingsOverlay.classList.remove('visible');
-        }
 
         dom.menuTag.addEventListener('click', openMenu);
         dom.closeSettings.addEventListener('click', closeMenu);
@@ -340,6 +347,32 @@ window.PocketReaderLogic = (function () {
         dom.fontSlider.addEventListener('input', (e) => {
             applyFontSize(e.target.value);
         });
+    }
+
+    function openMenu() {
+        document.body.classList.add('drawer-open');
+        dom.settingsDrawer.classList.add('open');
+        dom.settingsOverlay.classList.add('visible');
+        dom.settingsDrawer.setAttribute('aria-hidden', 'false');
+        dom.settingsOverlay.setAttribute('aria-hidden', 'false');
+        dom.settingsDrawer.inert = false;
+        dom.menuTag.setAttribute('aria-expanded', 'true');
+
+        const firstControl = dom.settingsDrawer.querySelector('button, input, [role="button"]');
+        if (firstControl) {
+            firstControl.focus({ preventScroll: true });
+        }
+    }
+
+    function closeMenu() {
+        document.body.classList.remove('drawer-open');
+        dom.settingsDrawer.classList.remove('open');
+        dom.settingsOverlay.classList.remove('visible');
+        dom.settingsDrawer.setAttribute('aria-hidden', 'true');
+        dom.settingsOverlay.setAttribute('aria-hidden', 'true');
+        dom.settingsDrawer.inert = true;
+        dom.menuTag.setAttribute('aria-expanded', 'false');
+        dom.menuTag.focus({ preventScroll: true });
     }
 
     return { init };
