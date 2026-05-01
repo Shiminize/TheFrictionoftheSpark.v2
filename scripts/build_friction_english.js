@@ -24,14 +24,15 @@ const chapterHighlights = [
     {
         chapter: 1,
         slug: 'chapter-01-the-vacuum',
-        anchor: 'Just one inch.',
-        alt: 'Chapter 1 oil painting highlight: Eline steps one inch off the Estate runner.'
+        anchor: '"The family does not benefit from your private attachment to instability."',
+        alt: 'Chapter 1 oil painting highlight: Eline sits with Marc and Stefan inside the Estate library.'
     },
     {
         chapter: 2,
         slug: 'chapter-02-the-clinical-shield',
-        anchor: 'She closed the message.',
-        alt: 'Chapter 2 oil painting highlight: Eline closes Kyle\'s message in the clinic.'
+        anchor: 'Pia closed the door with two fingers.',
+        match: 'contains',
+        alt: 'Chapter 2 oil painting highlight: Pia stands across from Eline in the clinic office.'
     },
     {
         chapter: 3,
@@ -42,8 +43,8 @@ const chapterHighlights = [
     {
         chapter: 4,
         slug: 'chapter-04-the-vulnerability',
-        anchor: '**kyle:** good',
-        alt: 'Chapter 4 oil painting highlight: Eline holds the ugly object after Kyle answers.'
+        anchor: 'After the call, the forum no longer looked flat.',
+        alt: 'Chapter 4 oil painting highlight: Eline hears Kyle behind the forum messages after the first voice call.'
     },
     {
         chapter: 5,
@@ -117,7 +118,7 @@ const chapterHighlights = [
         chapter: 16,
         slug: 'chapter-16-the-dirt-and-the-joy',
         anchor: 'The shock in his face was naked.',
-        alt: 'Chapter 16 oil painting highlight: Kyle realizes he forgot to check the exits.'
+        alt: 'Chapter 16 oil painting highlight: Bobi laughs with Eline and Kyle outside the underground party.'
     },
     {
         chapter: 17,
@@ -130,6 +131,12 @@ const chapterHighlights = [
         slug: 'chapter-18-the-weight-of-hope',
         anchor: 'It was a promise of cost.',
         alt: 'Chapter 18 oil painting highlight: Eline and Kyle sit with the weight of hope before the dog settles across their feet.'
+    },
+    {
+        chapter: 20,
+        slug: 'chapter-20-the-breach',
+        anchor: '"I\'m here," she said.',
+        alt: 'Chapter 20 oil painting highlight: Gerard breaches Bobi\'s safehouse while Eline, Kyle, and Bobi remain present.'
     }
 ];
 
@@ -419,7 +426,7 @@ function writeAudit(chapters) {
 - Chapter coverage: 24 of 24 chapters found and exported.
 - Canon check: final act keeps Kyle's death, the pistol as systemic violence, and Eline alone at the canal with Kyle's lighter.
 - Reader check: each chapter is exported as a single table-of-contents entry with paragraph HTML generated from the English manuscript.
-- Chapter highlight images: ${chapterHighlights.length} oil-painting figures are inserted into Chapters 1-18 at brief-approved scene beats.
+- Chapter highlight images: ${chapterHighlights.length} oil-painting figures are inserted into Chapters 1-18 and Chapter 20 at brief-approved scene beats.
 
 ## Chapter Inventory
 

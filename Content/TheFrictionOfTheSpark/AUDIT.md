@@ -14,7 +14,7 @@
 - Chapter coverage: 24 of 24 chapters found and exported.
 - Canon check: final act keeps Kyle's death, the pistol as systemic violence, and Eline alone at the canal with Kyle's lighter.
 - Reader check: each chapter is exported as a single table-of-contents entry with paragraph HTML generated from the English manuscript.
-- Chapter highlight images: 18 oil-painting figures are inserted into Chapters 1-18 at brief-approved scene beats.
+- Chapter highlight images: 19 oil-painting figures are inserted into Chapters 1-18 and Chapter 20 at brief-approved scene beats.
 
 ## Chapter Inventory
 
