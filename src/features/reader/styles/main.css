@@ -195,6 +195,42 @@ body.drawer-open {
     margin-bottom: 1.5em;
 }
 
+.chapter-highlight {
+    display: flex;
+    justify-content: center;
+    width: min(100%, 560px);
+    margin: 2.25rem auto 2.5rem;
+}
+
+.chapter-highlight img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: min(72vh, 760px);
+    object-fit: contain;
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    border-color: color-mix(in srgb, var(--ui-border) 78%, transparent);
+    border-radius: 6px;
+    background: var(--bg-panel);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.18);
+}
+
+[data-theme="dark"] .chapter-highlight img,
+[data-theme="contrast"] .chapter-highlight img {
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="contrast"] .chapter-highlight img {
+    border-color: var(--ui-border);
+}
+
+@media (max-width: 600px) {
+    .chapter-highlight {
+        width: 100%;
+        margin: 1.75rem auto 2rem;
+    }
+}
+
 .page-footer {
     text-align: center;
     margin-top: 15px;

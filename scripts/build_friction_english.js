@@ -17,6 +17,122 @@ const rewriteSources = [
     ...Array.from({ length: 15 }, (_, index) => path.join(projectRoot, 'rewrites', `chapter-${index + 10}.md`))
 ];
 
+const chapterHighlightSourceDir = path.join(projectRoot, 'images', 'chapter-highlights');
+const chapterHighlightAssetDir = path.join(repoRoot, 'src', 'assets', 'images', 'chapter-highlights');
+const chapterHighlightAssetPath = 'src/assets/images/chapter-highlights';
+const chapterHighlights = [
+    {
+        chapter: 1,
+        slug: 'chapter-01-the-vacuum',
+        anchor: 'Just one inch.',
+        alt: 'Chapter 1 oil painting highlight: Eline steps one inch off the Estate runner.'
+    },
+    {
+        chapter: 2,
+        slug: 'chapter-02-the-clinical-shield',
+        anchor: 'She closed the message.',
+        alt: 'Chapter 2 oil painting highlight: Eline closes Kyle\'s message in the clinic.'
+    },
+    {
+        chapter: 3,
+        slug: 'chapter-03-the-triangulation',
+        anchor: 'tell me what to say',
+        alt: 'Chapter 3 oil painting highlight: Kyle asks Eline what to say during the forum crisis.'
+    },
+    {
+        chapter: 4,
+        slug: 'chapter-04-the-vulnerability',
+        anchor: '**kyle:** good',
+        alt: 'Chapter 4 oil painting highlight: Eline holds the ugly object after Kyle answers.'
+    },
+    {
+        chapter: 5,
+        slug: 'chapter-05-the-breaking-point',
+        anchor: '**Eline:** Come to Schiphol.',
+        alt: 'Chapter 5 oil painting highlight: Eline sends Kyle the irreversible Schiphol message.'
+    },
+    {
+        chapter: 6,
+        slug: 'chapter-06-the-collision',
+        anchor: '"Wall," he said.',
+        alt: 'Chapter 6 oil painting highlight: Kyle guides Eline toward the airport wall.'
+    },
+    {
+        chapter: 7,
+        slug: 'chapter-07-the-foreign-body',
+        anchor: 'Then Kyle scuffed one boot over the marble.',
+        alt: 'Chapter 7 oil painting highlight: Kyle marks the Estate marble with his boot.'
+    },
+    {
+        chapter: 8,
+        slug: 'chapter-08-polite-warfare',
+        anchor: '"Does it know you?"',
+        alt: 'Chapter 8 oil painting highlight: Kyle asks whether the Estate knows Eline.'
+    },
+    {
+        chapter: 9,
+        slug: 'chapter-09-syntax-breakdown',
+        anchor: '"Yes."',
+        occurrence: 2,
+        alt: 'Chapter 9 oil painting highlight: Eline consents before Kyle brings the lighter warmth to her palm.'
+    },
+    {
+        chapter: 10,
+        slug: 'chapter-10-the-pushback',
+        anchor: 'Gerard.',
+        alt: 'Chapter 10 oil painting highlight: Eline sees Gerard written beside the red marker.'
+    },
+    {
+        chapter: 11,
+        slug: 'chapter-11-the-crucible-part-1',
+        anchor: 'He set the lighter on the desk between them.',
+        alt: 'Chapter 11 oil painting highlight: Kyle sets the lighter on the Estate desk.'
+    },
+    {
+        chapter: 12,
+        slug: 'chapter-12-the-crucible-part-2',
+        anchor: 'It had simply become optional.',
+        alt: 'Chapter 12 oil painting highlight: Eline understands the cage has become optional.'
+    },
+    {
+        chapter: 13,
+        slug: 'chapter-13-the-great-migration-begins',
+        anchor: 'The fabric was plain, dark, useful. Pockets. Buttons. No lineage.',
+        alt: 'Chapter 13 oil painting highlight: Eline puts on the plain clinic cardigan.'
+    },
+    {
+        chapter: 14,
+        slug: 'chapter-14-the-extraction',
+        anchor: 'Kyle pulled the gate open enough for her to pass.',
+        match: 'contains',
+        alt: 'Chapter 14 oil painting highlight: Kyle opens the service gate into the lane.'
+    },
+    {
+        chapter: 15,
+        slug: 'chapter-15-sensory-overload',
+        anchor: '"Just... there."',
+        alt: 'Chapter 15 oil painting highlight: Eline asks Kyle to stay there in the safehouse.'
+    },
+    {
+        chapter: 16,
+        slug: 'chapter-16-the-dirt-and-the-joy',
+        anchor: 'The shock in his face was naked.',
+        alt: 'Chapter 16 oil painting highlight: Kyle realizes he forgot to check the exits.'
+    },
+    {
+        chapter: 17,
+        slug: 'chapter-17-friction-and-fuel',
+        anchor: 'Later, the lighter lay on the crate beside the bed, catching the streetlight on its scratched edge.',
+        alt: 'Chapter 17 oil painting highlight: The lighter catches streetlight on the crate beside the bed.'
+    },
+    {
+        chapter: 18,
+        slug: 'chapter-18-the-weight-of-hope',
+        anchor: 'It was a promise of cost.',
+        alt: 'Chapter 18 oil painting highlight: Eline and Kyle sit with the weight of hope before the dog settles across their feet.'
+    }
+];
+
 function escapeHtml(value) {
     return value
         .replace(/&/g, '&amp;')
@@ -30,13 +146,96 @@ function inlineMarkdownToHtml(value) {
         .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 }
 
-function bodyToHtml(body) {
-    return body
+function normalizeParagraph(value) {
+    return value.replace(/\s+/g, ' ').trim();
+}
+
+function chapterHighlightFileName(highlight) {
+    return `${highlight.slug}-oil-painting.png`;
+}
+
+function getChapterHighlight(chapterNumber) {
+    return chapterHighlights.find((highlight) => highlight.chapter === chapterNumber);
+}
+
+function readPngDimensions(filePath) {
+    const png = fs.readFileSync(filePath);
+
+    if (png.toString('ascii', 1, 4) !== 'PNG') {
+        throw new Error(`Expected PNG image: ${filePath}`);
+    }
+
+    return {
+        width: png.readUInt32BE(16),
+        height: png.readUInt32BE(20)
+    };
+}
+
+function chapterHighlightSourcePath(highlight) {
+    return path.join(chapterHighlightSourceDir, highlight.slug, chapterHighlightFileName(highlight));
+}
+
+function buildChapterHighlightFigure(highlight) {
+    const sourcePath = chapterHighlightSourcePath(highlight);
+    const { width, height } = readPngDimensions(sourcePath);
+    const imageSrc = `${chapterHighlightAssetPath}/${chapterHighlightFileName(highlight)}`;
+
+    return [
+        '<figure class="chapter-highlight">',
+        `    <img src="${imageSrc}" alt="${escapeHtml(highlight.alt)}" width="${width}" height="${height}" loading="lazy" decoding="async">`,
+        '</figure>'
+    ].join('\n');
+}
+
+function insertChapterHighlight(paragraphs, highlight) {
+    const anchor = normalizeParagraph(highlight.anchor);
+    const occurrence = highlight.occurrence || 1;
+    let matches = 0;
+
+    for (let index = 0; index < paragraphs.length; index += 1) {
+        const paragraph = normalizeParagraph(paragraphs[index]);
+        const isMatch = highlight.match === 'contains'
+            ? paragraph.includes(anchor)
+            : paragraph === anchor;
+
+        if (!isMatch) {
+            continue;
+        }
+
+        matches += 1;
+
+        if (matches === occurrence) {
+            paragraphs.splice(index + 1, 0, {
+                type: 'chapter-highlight',
+                html: buildChapterHighlightFigure(highlight)
+            });
+            return;
+        }
+    }
+
+    throw new Error(`Missing chapter ${highlight.chapter} highlight anchor: ${highlight.anchor}`);
+}
+
+function bodyToHtml(body, chapterNumber) {
+    const paragraphs = body
         .trim()
         .split(/\n{2,}/)
         .map((paragraph) => paragraph.replace(/\s*\n\s*/g, ' ').trim())
-        .filter(Boolean)
-        .map((paragraph) => `<p>${inlineMarkdownToHtml(paragraph)}</p>`)
+        .filter(Boolean);
+    const highlight = getChapterHighlight(chapterNumber);
+
+    if (highlight) {
+        insertChapterHighlight(paragraphs, highlight);
+    }
+
+    return paragraphs
+        .map((paragraph) => {
+            if (typeof paragraph === 'object' && paragraph.type === 'chapter-highlight') {
+                return paragraph.html;
+            }
+
+            return `<p>${inlineMarkdownToHtml(paragraph)}</p>`;
+        })
         .join('\n');
 }
 
@@ -63,6 +262,25 @@ function loadChaptersFromRewrites() {
     }
 
     return rewriteSources.flatMap(parseRewriteFile).sort((a, b) => a.chapter - b.chapter);
+}
+
+function loadChaptersForReader() {
+    const rewriteChapters = loadChaptersFromRewrites();
+
+    if (!rewriteChapters) {
+        return parseEnglishSource();
+    }
+
+    const existingChapters = fs.existsSync(englishSourcePath) ? parseEnglishSource() : [];
+    const existingByChapter = new Map(existingChapters.map((chapter) => [chapter.chapter, chapter]));
+
+    return rewriteChapters.map((chapter) => {
+        if (chapter.chapter <= 18) {
+            return chapter;
+        }
+
+        return existingByChapter.get(chapter.chapter) || chapter;
+    });
 }
 
 function parseEnglishSource() {
@@ -126,7 +344,7 @@ function writeReaderData(chapters) {
             chapter: chapter.chapter,
             isChapterStart: true,
             title: chapter.title,
-            content: bodyToHtml(chapter.body)
+            content: bodyToHtml(chapter.body, chapter.chapter)
         }))
     ];
 
@@ -156,6 +374,27 @@ function copyCoverAssets() {
     }
 }
 
+function copyChapterHighlightAssets() {
+    fs.mkdirSync(chapterHighlightAssetDir, { recursive: true });
+
+    for (const fileName of fs.readdirSync(chapterHighlightAssetDir)) {
+        if (fileName.endsWith('.png')) {
+            fs.unlinkSync(path.join(chapterHighlightAssetDir, fileName));
+        }
+    }
+
+    for (const highlight of chapterHighlights) {
+        const sourcePath = chapterHighlightSourcePath(highlight);
+        const targetPath = path.join(chapterHighlightAssetDir, chapterHighlightFileName(highlight));
+
+        if (!fs.existsSync(sourcePath)) {
+            throw new Error(`Missing chapter highlight image: ${sourcePath}`);
+        }
+
+        fs.copyFileSync(sourcePath, targetPath);
+    }
+}
+
 function removeNonEnglishSource() {
     if (fs.existsSync(chineseSourcePath)) {
         fs.unlinkSync(chineseSourcePath);
@@ -176,10 +415,11 @@ function writeAudit(chapters) {
 
 ## Novel Audit
 
-- Source: rewritten Markdown chapters under \`../rewrites/\` when available; otherwise this script can rebuild from \`Content/TheFrictionOfTheSpark/en.txt\`.
+- Source: rewritten Markdown chapters under \`../rewrites/\` for Chapters 1-18; Chapters 19-24 are preserved from \`Content/TheFrictionOfTheSpark/en.txt\` for this highlight-image build.
 - Chapter coverage: 24 of 24 chapters found and exported.
 - Canon check: final act keeps Kyle's death, the pistol as systemic violence, and Eline alone at the canal with Kyle's lighter.
 - Reader check: each chapter is exported as a single table-of-contents entry with paragraph HTML generated from the English manuscript.
+- Chapter highlight images: ${chapterHighlights.length} oil-painting figures are inserted into Chapters 1-18 at brief-approved scene beats.
 
 ## Chapter Inventory
 
@@ -190,13 +430,14 @@ ${titleList}
 }
 
 function main() {
-    const chapters = loadChaptersFromRewrites() || parseEnglishSource();
+    const chapters = loadChaptersForReader();
 
     validateChapters(chapters);
     fs.mkdirSync(contentDir, { recursive: true });
     writeEnglishSource(chapters);
-    writeReaderData(chapters);
     copyCoverAssets();
+    copyChapterHighlightAssets();
+    writeReaderData(chapters);
     removeNonEnglishSource();
     writeAudit(chapters);
 
