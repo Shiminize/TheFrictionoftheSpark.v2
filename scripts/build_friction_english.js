@@ -74,7 +74,6 @@ const chapterHighlights = [
         chapter: 9,
         slug: 'chapter-09-syntax-breakdown',
         anchor: '"Yes."',
-        occurrence: 2,
         alt: 'Chapter 9 oil painting highlight: Eline consents before Kyle brings the lighter warmth to her palm.'
     },
     {
