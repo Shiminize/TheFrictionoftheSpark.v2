@@ -277,16 +277,7 @@ function loadChaptersForReader() {
         return parseEnglishSource();
     }
 
-    const existingChapters = fs.existsSync(englishSourcePath) ? parseEnglishSource() : [];
-    const existingByChapter = new Map(existingChapters.map((chapter) => [chapter.chapter, chapter]));
-
-    return rewriteChapters.map((chapter) => {
-        if (chapter.chapter <= 18) {
-            return chapter;
-        }
-
-        return existingByChapter.get(chapter.chapter) || chapter;
-    });
+    return rewriteChapters;
 }
 
 function parseEnglishSource() {
@@ -421,7 +412,7 @@ function writeAudit(chapters) {
 
 ## Novel Audit
 
-- Source: rewritten Markdown chapters under \`../rewrites/\` for Chapters 1-18; Chapters 19-24 are preserved from \`Content/TheFrictionOfTheSpark/en.txt\` for this highlight-image build.
+- Source: rewritten Markdown chapters under \`../rewrites/\` for Chapters 1-24.
 - Chapter coverage: 24 of 24 chapters found and exported.
 - Canon check: final act keeps Kyle's death, the pistol as systemic violence, and Eline alone at the canal with Kyle's lighter.
 - Reader check: each chapter is exported as a single table-of-contents entry with paragraph HTML generated from the English manuscript.
