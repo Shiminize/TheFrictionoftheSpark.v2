@@ -1,0 +1,132 @@
+import { BookOpen, Check, ChevronRight, Minus, Plus } from 'lucide-react';
+import type { AppState, LibraryItem, ReadingProgress, Suggestion } from '../../app/types';
+import { stripHtml } from '../reader/pagination';
+import { IconButton } from '../../ui';
+
+interface HomeScreenProps {
+  items: LibraryItem[];
+  state: AppState;
+  suggestions: Suggestion[];
+  onOpenItem: (itemId: string) => void;
+  onNavigateLibrary: (collectionId?: string) => void;
+  onSetDailyGoal: (minutes: number) => void;
+}
+
+export function HomeScreen({ items, state, suggestions, onOpenItem, onNavigateLibrary, onSetDailyGoal }: HomeScreenProps) {
+  const progressList = Object.values(state.progress);
+  const continueItems = items.filter((item) => state.progress[item.id]?.status === 'reading');
+  const wantItems = items.filter((item) => state.progress[item.id]?.status === 'want-to-read');
+  const minutesRead = progressList.reduce((total, progress) => total + progress.minutesReadToday, 0);
+  const dailyGoal = state.goal.dailyMinutes;
+  const finishedThisYear = progressList.filter((progress) => isFinishedThisYear(progress)).length;
+  const goalPercent = Math.min(100, Math.round((minutesRead / dailyGoal) * 100));
+
+  return (
+    <main className="screen screen-home">
+      <header className="screen-header home-header">
+        <h1>Home</h1>
+        <div className="goal-ring" style={{ '--goal-progress': `${goalPercent}%` } as React.CSSProperties}>
+          <span>{minutesRead}</span>
+          <small>{dailyGoal}</small>
+        </div>
+      </header>
+
+      <section className="goal-panel" aria-label="Reading goal">
+        <div>
+          <strong>{finishedThisYear} finished this year</strong>
+          <span>{minutesRead} of {dailyGoal} minutes today</span>
+        </div>
+        <div className="goal-controls">
+          <IconButton label="Decrease daily goal" variant="soft" onClick={() => onSetDailyGoal(Math.max(5, dailyGoal - 5))}>
+            <Minus size={18} />
+          </IconButton>
+          <IconButton label="Increase daily goal" variant="soft" onClick={() => onSetDailyGoal(Math.min(180, dailyGoal + 5))}>
+            <Plus size={18} />
+          </IconButton>
+        </div>
+      </section>
+
+      <section className="section-block home-continue-section" aria-labelledby="continue-title">
+        <div className="section-title-row">
+          <h2 id="continue-title">Continue</h2>
+          <button type="button" className="text-button" aria-label="Open Continue collection" onClick={() => onNavigateLibrary('continue')}>
+            <ChevronRight size={22} aria-hidden="true" />
+          </button>
+        </div>
+        <div className="continue-rail">
+          {continueItems.map((item) => (
+            <button key={item.id} type="button" className="continue-card" onClick={() => onOpenItem(item.id)}>
+              <img src={item.cover} alt="" loading="lazy" />
+              <span>
+                <strong>{item.title}</strong>
+                <small>{item.author}</small>
+                <small>{state.progress[item.id]?.percent || 0}%</small>
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="section-block home-top-picks-section" aria-labelledby="top-picks-title">
+        <h2 id="top-picks-title">Top Picks</h2>
+        <div className="top-picks-grid">
+          {suggestions.map((suggestion) => {
+            const item = items.find((candidate) => candidate.id === suggestion.itemId);
+            if (!item) return null;
+
+            return (
+              <button key={suggestion.itemId} type="button" className="pick-card" onClick={() => onOpenItem(suggestion.itemId)}>
+                <img src={item.cover} alt="" loading="lazy" />
+                <span>
+                  <strong>{suggestion.reason}</strong>
+                  <small>{item.subtitle}</small>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="section-block home-want-section" aria-labelledby="want-title">
+        <div className="section-title-row">
+          <div>
+            <h2 id="want-title">Want to Read</h2>
+            <p>Books you’d like to read next.</p>
+          </div>
+          <button type="button" className="text-button" aria-label="Open Want to Read collection" onClick={() => onNavigateLibrary('want-to-read')}>
+            <ChevronRight size={22} aria-hidden="true" />
+          </button>
+        </div>
+        <div className="cover-row">
+          {wantItems.map((item) => (
+            <button key={item.id} type="button" className="cover-tile" onClick={() => onOpenItem(item.id)}>
+              <img src={item.cover} alt="" loading="lazy" />
+              <span>{item.title}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="section-block year-summary" aria-label="Library summary">
+        <BookOpen size={24} aria-hidden="true" />
+        <strong>{items.length} packaged items</strong>
+        <span>{countWords(items)} saved words across books, samples, and PDFs.</span>
+      </section>
+    </main>
+  );
+}
+
+function isFinishedThisYear(progress: ReadingProgress): boolean {
+  if (!progress.finishedAt) return false;
+  return new Date(progress.finishedAt).getFullYear() === new Date().getFullYear();
+}
+
+function countWords(items: LibraryItem[]): string {
+  const words = items.reduce((total, item) => {
+    const itemWords = item.content.reduce((chapterTotal, chapter) => chapterTotal + stripHtml(chapter.content).split(/\s+/).filter(Boolean).length, 0);
+    return total + itemWords;
+  }, 0);
+
+  if (words > 1000) return `${Math.round(words / 1000)}k`;
+  return String(words);
+}

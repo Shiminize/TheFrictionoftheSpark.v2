@@ -1,0 +1,35 @@
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--app-bg);
+  color: var(--app-ink);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+[role='slider']:focus-visible {
+  outline: var(--generated-length-3px) solid var(--focus-color, var(--color-accent-green-700));
+  outline-offset: var(--generated-length-3px);
+}

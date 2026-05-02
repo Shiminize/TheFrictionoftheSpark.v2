@@ -1,0 +1,137 @@
+.collection-rail {
+  display: flex;
+  gap: var(--space-2-5);
+  overflow-x: auto;
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-3-5);
+}
+
+.collection-pill {
+  white-space: nowrap;
+  min-height: var(--space-10);
+  padding: 0 var(--space-3-5);
+  border-radius: var(--radius-ui);
+  color: var(--app-muted);
+  background: var(--generated-color-rgba-255-255-255-0neg-64);
+}
+
+.collection-pill.active {
+  background: var(--app-ink);
+  color: var(--app-surface);
+}
+
+.collection-form,
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-5);
+  padding: var(--space-2-5) var(--space-3);
+}
+
+.collection-form {
+  margin-bottom: var(--space-5);
+}
+
+.collection-form input,
+.search-field input,
+.customize-grid select {
+  width: 100%;
+  min-height: var(--space-10);
+  border: 0;
+  background: transparent;
+  color: var(--app-ink);
+  outline: none;
+}
+
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--generated-length-218px), 1fr));
+  gap: var(--space-4-5);
+}
+
+.library-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.library-card {
+  display: grid;
+  grid-template-columns: var(--space-23) 1fr;
+  gap: var(--space-3-5);
+  padding: var(--space-3);
+  border-radius: var(--radius-ui);
+  background: var(--surface-panel-soft);
+  box-shadow: var(--shadow-raised);
+}
+
+.library-grid .library-card {
+  grid-template-columns: 1fr;
+}
+
+.library-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-ui-sm);
+  background: var(--app-subtle);
+}
+
+.library-cover-button {
+  width: 100%;
+  padding: 0;
+}
+
+.library-title-button {
+  padding: 0;
+  width: 100%;
+}
+
+.library-title-button strong,
+.library-title-button span {
+  display: block;
+}
+
+.library-title-button strong {
+  line-height: 1.2;
+}
+
+.library-title-button span {
+  margin-top: var(--space-1);
+  color: var(--app-muted);
+}
+
+.library-meta,
+.library-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.library-meta span {
+  min-height: var(--space-7);
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-ui);
+  padding: 0 var(--space-2-5);
+  background: var(--generated-color-rgba-15-128-103-0neg-1);
+  color: var(--app-accent);
+  font-size: var(--generated-length-0neg-76rem);
+  font-weight: 700;
+}
+
+.collection-select {
+  min-height: var(--space-10);
+  border: 0;
+  border-radius: var(--radius-ui);
+  padding: 0 var(--space-2-5);
+  background: var(--surface-field);
+}
+
+@media (max-width: 700px) {
+  .library-grid {
+    grid-template-columns: 1fr;
+  }
+}

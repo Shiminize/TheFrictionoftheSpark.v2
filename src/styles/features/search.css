@@ -1,0 +1,18 @@
+.search-results {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4-5);
+}
+
+.search-result {
+  display: grid;
+  gap: var(--generated-length-5px);
+  padding: var(--space-3-5);
+  border-radius: var(--radius-ui);
+  background: var(--surface-panel);
+}
+
+.search-result span,
+.search-result small {
+  color: var(--app-muted);
+}

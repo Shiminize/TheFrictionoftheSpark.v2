@@ -1,0 +1,10 @@
+.DS_Store
+**/.DS_Store
+.git/
+.vercel/
+.agent/
+node_modules/
+dist/
+scratch/
+.codex-smoke-*.png
+tmp-*.png

@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Book Reader UI Palette Options</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --page-bg: #f4f1ea;
+        --page-ink: #171717;
+        --page-muted: #62656b;
+        --panel: rgba(255, 255, 255, 0.82);
+        --panel-strong: #ffffff;
+        --rule: rgba(23, 23, 23, 0.12);
+        --shadow: 0 18px 42px rgba(18, 22, 25, 0.12);
+        --radius: 22px;
+        --radius-sm: 12px;
+        --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --font-reader: Georgia, "Times New Roman", serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at top left, rgba(255, 255, 255, 0.62), transparent 34rem),
+          var(--page-bg);
+        color: var(--page-ink);
+        font-family: var(--font-ui);
+      }
+
+      main {
+        width: min(1180px, calc(100vw - 36px));
+        margin: 0 auto;
+        padding: 42px 0 56px;
+      }
+
+      header {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 28px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-family: var(--font-reader);
+        font-size: clamp(2.2rem, 4vw, 4.2rem);
+        line-height: 1.03;
+        letter-spacing: 0;
+      }
+
+      .intro {
+        max-width: 760px;
+        color: var(--page-muted);
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+
+      .note {
+        display: inline-flex;
+        width: fit-content;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border: 1px solid var(--rule);
+        border-radius: 999px;
+        background: var(--panel);
+        color: var(--page-muted);
+        font-size: 0.86rem;
+      }
+
+      .app-link {
+        display: inline-flex;
+        width: fit-content;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: var(--radius-sm);
+        background: var(--page-ink);
+        color: var(--panel-strong);
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+      }
+
+      .palette {
+        --surface-app: #f6f4ee;
+        --surface-panel: rgba(255, 255, 255, 0.78);
+        --surface-sheet: rgba(255, 255, 255, 0.94);
+        --text-primary: #171717;
+        --text-muted: #5f6369;
+        --border-subtle: rgba(23, 23, 23, 0.1);
+        --action-primary: #0f8067;
+        --action-danger: #a8282a;
+        --reader-bg: #f8f6ef;
+        --reader-panel: #ffffff;
+        --reader-text: #191817;
+        --reader-muted: #62656b;
+        --reader-highlight: rgba(255, 255, 255, 0.78);
+        --line-guide: rgba(247, 245, 239, 0.68);
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 18px;
+        overflow: hidden;
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius);
+        background: var(--surface-app);
+        box-shadow: var(--shadow);
+      }
+
+      .palette.dusk {
+        color-scheme: dark;
+      }
+
+      .palette-head {
+        display: grid;
+        gap: 10px;
+        padding: 22px 22px 0;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .tag {
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: color-mix(in oklab, var(--action-primary) 12%, transparent);
+        color: var(--action-primary);
+        font-size: 0.76rem;
+        font-weight: 700;
+      }
+
+      .palette h2 {
+        color: var(--text-primary);
+        font-family: var(--font-reader);
+        font-size: 1.8rem;
+        line-height: 1.08;
+      }
+
+      .palette p {
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      .swatches {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+        padding-top: 4px;
+      }
+
+      .swatch {
+        display: grid;
+        min-height: 56px;
+        align-content: end;
+        padding: 7px;
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        background: var(--swatch);
+        color: var(--swatch-text);
+        font-size: 0.66rem;
+        font-weight: 700;
+        line-height: 1.1;
+      }
+
+      .preview {
+        display: grid;
+        grid-template-columns: 76px 1fr 240px;
+        gap: 16px;
+        padding: 0 22px 22px;
+      }
+
+      .nav {
+        align-self: start;
+        display: grid;
+        gap: 10px;
+        padding: 10px;
+        border: 1px solid var(--border-subtle);
+        border-radius: 28px;
+        background: var(--surface-sheet);
+      }
+
+      .nav-dot {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        place-items: center;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--text-muted);
+        font-weight: 800;
+      }
+
+      .nav-dot.active {
+        background: var(--action-primary);
+        color: #ffffff;
+      }
+
+      .dashboard {
+        display: grid;
+        gap: 14px;
+      }
+
+      .card,
+      .sheet,
+      .reader {
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        background: var(--surface-panel);
+      }
+
+      .card {
+        display: grid;
+        grid-template-columns: 54px 1fr auto;
+        gap: 13px;
+        align-items: center;
+        padding: 13px;
+      }
+
+      .cover {
+        width: 54px;
+        aspect-ratio: 3 / 4;
+        border-radius: 8px;
+        background:
+          linear-gradient(145deg, color-mix(in oklab, var(--action-primary) 82%, white), color-mix(in oklab, var(--action-primary) 72%, black)),
+          var(--action-primary);
+      }
+
+      .card strong {
+        display: block;
+        color: var(--text-primary);
+        font-size: 0.96rem;
+      }
+
+      .card span {
+        display: block;
+        margin-top: 4px;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+      }
+
+      .more {
+        color: var(--text-muted);
+        font-size: 1.4rem;
+        letter-spacing: 2px;
+      }
+
+      .reader {
+        position: relative;
+        min-height: 300px;
+        padding: 28px 24px;
+        background: var(--reader-bg);
+        color: var(--reader-text);
+        font-family: var(--font-reader);
+        line-height: 1.66;
+      }
+
+      .reader h3 {
+        margin-bottom: 18px;
+        color: var(--reader-text);
+        text-align: center;
+        font-size: 1.45rem;
+      }
+
+      .reader p {
+        color: var(--reader-text);
+        font-size: 1rem;
+      }
+
+      .line {
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        top: 47%;
+        height: 32px;
+        border: 1px solid var(--border-subtle);
+        border-radius: 8px;
+        background: var(--reader-highlight);
+        box-shadow: 0 0 0 160vmax var(--line-guide);
+        clip-path: inset(-160vmax -160vmax -160vmax -160vmax);
+      }
+
+      .sheet {
+        display: grid;
+        gap: 12px;
+        padding: 14px;
+        background: var(--surface-sheet);
+      }
+
+      .sheet h3 {
+        color: var(--text-primary);
+        font-size: 1rem;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .button,
+      .theme-chip {
+        min-height: 38px;
+        border: 1px solid var(--border-subtle);
+        border-radius: 999px;
+        background: color-mix(in oklab, var(--text-primary) 6%, transparent);
+        color: var(--text-primary);
+        font-weight: 750;
+      }
+
+      .button.primary {
+        border-color: transparent;
+        background: var(--action-primary);
+        color: #ffffff;
+      }
+
+      .token-table {
+        display: grid;
+        gap: 6px;
+        padding: 0 22px 22px;
+      }
+
+      .token-row {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 8px;
+        color: var(--text-muted);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.72rem;
+      }
+
+      .token-row b {
+        color: var(--text-primary);
+        font-weight: 700;
+      }
+
+      .sage {
+        --surface-app: #f3f2eb;
+        --surface-panel: rgba(255, 255, 250, 0.82);
+        --surface-sheet: rgba(255, 255, 250, 0.94);
+        --text-primary: #19201c;
+        --text-muted: #5d665f;
+        --border-subtle: rgba(25, 32, 28, 0.11);
+        --action-primary: #557b67;
+        --action-danger: #a14d46;
+        --reader-bg: #fbfaf3;
+        --reader-panel: #fffefa;
+        --reader-text: #1a201c;
+        --reader-muted: #5e665f;
+        --reader-highlight: rgba(255, 255, 250, 0.84);
+        --line-guide: rgba(243, 242, 235, 0.68);
+      }
+
+      .oxide {
+        --surface-app: #f4eee7;
+        --surface-panel: rgba(255, 250, 244, 0.84);
+        --surface-sheet: rgba(255, 250, 244, 0.95);
+        --text-primary: #241b16;
+        --text-muted: #6d5c51;
+        --border-subtle: rgba(36, 27, 22, 0.12);
+        --action-primary: #8a5a34;
+        --action-danger: #9a373a;
+        --reader-bg: #fbf3e7;
+        --reader-panel: #fff8ed;
+        --reader-text: #251b14;
+        --reader-muted: #6c594c;
+        --reader-highlight: rgba(255, 248, 237, 0.84);
+        --line-guide: rgba(244, 238, 231, 0.7);
+      }
+
+      .noir {
+        --surface-app: #f3f3ef;
+        --surface-panel: rgba(255, 255, 252, 0.86);
+        --surface-sheet: rgba(255, 255, 252, 0.96);
+        --text-primary: #151719;
+        --text-muted: #5d6166;
+        --border-subtle: rgba(21, 23, 25, 0.11);
+        --action-primary: #415c73;
+        --action-danger: #9d3d4b;
+        --reader-bg: #fcfbf7;
+        --reader-panel: #ffffff;
+        --reader-text: #151719;
+        --reader-muted: #5b6067;
+        --reader-highlight: rgba(255, 255, 255, 0.82);
+        --line-guide: rgba(243, 243, 239, 0.68);
+      }
+
+      .rose {
+        --surface-app: #f6efed;
+        --surface-panel: rgba(255, 250, 249, 0.84);
+        --surface-sheet: rgba(255, 250, 249, 0.95);
+        --text-primary: #241b1d;
+        --text-muted: #695c5f;
+        --border-subtle: rgba(36, 27, 29, 0.11);
+        --action-primary: #7b5e6c;
+        --action-danger: #9a3e40;
+        --reader-bg: #fff8f5;
+        --reader-panel: #fffdfb;
+        --reader-text: #261b1d;
+        --reader-muted: #6c5d60;
+        --reader-highlight: rgba(255, 253, 251, 0.84);
+        --line-guide: rgba(246, 239, 237, 0.7);
+      }
+
+      .dusk {
+        --surface-app: #262722;
+        --surface-panel: rgba(54, 55, 49, 0.86);
+        --surface-sheet: rgba(62, 62, 56, 0.96);
+        --text-primary: #f4f1e9;
+        --text-muted: #c7c0b2;
+        --border-subtle: rgba(244, 241, 233, 0.14);
+        --action-primary: #a7b890;
+        --action-danger: #dc8b78;
+        --reader-bg: #2f302a;
+        --reader-panel: #3c3d36;
+        --reader-text: #f3efe4;
+        --reader-muted: #c9c2b5;
+        --reader-highlight: rgba(244, 241, 233, 0.12);
+        --line-guide: rgba(38, 39, 34, 0.62);
+      }
+
+      .marine {
+        --surface-app: #edf2f1;
+        --surface-panel: rgba(251, 254, 253, 0.84);
+        --surface-sheet: rgba(251, 254, 253, 0.95);
+        --text-primary: #142020;
+        --text-muted: #596767;
+        --border-subtle: rgba(20, 32, 32, 0.11);
+        --action-primary: #426f74;
+        --action-danger: #9b4143;
+        --reader-bg: #f8fcfa;
+        --reader-panel: #ffffff;
+        --reader-text: #142020;
+        --reader-muted: #5a6868;
+        --reader-highlight: rgba(255, 255, 255, 0.84);
+        --line-guide: rgba(237, 242, 241, 0.7);
+      }
+
+      footer {
+        margin-top: 28px;
+        padding: 20px;
+        border: 1px solid var(--rule);
+        border-radius: var(--radius);
+        background: var(--panel);
+        color: var(--page-muted);
+        line-height: 1.55;
+      }
+
+      footer a {
+        color: #325e55;
+        font-weight: 700;
+      }
+
+      @media (max-width: 940px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .preview {
+          grid-template-columns: 1fr;
+        }
+
+        .nav {
+          grid-template-columns: repeat(3, 44px);
+          width: fit-content;
+        }
+      }
+
+      @media (max-width: 560px) {
+        main {
+          width: min(100vw - 24px, 1180px);
+          padding-top: 26px;
+        }
+
+        .swatches {
+          grid-template-columns: repeat(3, 1fr);
+        }
+
+        .token-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="note">Token-based palette board for the Vite React reader</span>
+        <a class="app-link" href="http://localhost:4174/">Reference board only. Open the app at http://localhost:4174/</a>
+        <h1>Book Reader UI Palette Options</h1>
+        <p class="intro">
+          Each option is mapped to the app's current color architecture: app surfaces, text, muted text,
+          borders, action colors, reader surfaces, reader text, reader highlight, and line guide dimming.
+          Choose the direction first; the final pass should convert the chosen values into foundation and
+          semantic tokens in <code>tokens.css</code> and <code>themes.css</code>.
+        </p>
+      </header>
+
+      <section class="grid" aria-label="Palette options">
+        <article class="palette sage">
+          <div class="palette-head">
+            <div class="meta">
+              <span class="tag">Best default</span>
+              <span class="tag">Quiet premium</span>
+            </div>
+            <h2>01. Digital Sage Library</h2>
+            <p>Muted sage, warm paper, and ink. Closest to the current app, but calmer and more modern.</p>
+            <div class="swatches">
+              <span class="swatch" style="--swatch: var(--surface-app); --swatch-text: var(--text-primary)">app</span>
+              <span class="swatch" style="--swatch: var(--surface-panel); --swatch-text: var(--text-primary)">panel</span>
+              <span class="swatch" style="--swatch: var(--text-primary); --swatch-text: #fff">ink</span>
+              <span class="swatch" style="--swatch: var(--text-muted); --swatch-text: #fff">muted</span>
+              <span class="swatch" style="--swatch: var(--action-primary); --swatch-text: #fff">action</span>
+              <span class="swatch" style="--swatch: var(--reader-bg); --swatch-text: var(--reader-text)">reader</span>
+            </div>
+          </div>
+          <div class="preview">
+            <div class="nav"><span class="nav-dot active">H</span><span class="nav-dot">L</span><span class="nav-dot">S</span></div>
+            <div class="dashboard">
+              <div class="card"><span class="cover"></span><div><strong>Continue Reading</strong><span>Chapter 12 - 63%</span></div><span class="more">...</span></div>
+              <div class="reader"><h3>Chapter 40</h3><p>Elizabeth's impatience to acquaint Jane with what had happened could no longer be overcome.</p><span class="line"></span></div>
+            </div>
+            <div class="sheet"><h3>Themes & Settings</h3><button class="button primary">Theme Default</button><div class="controls"><button class="button">Quiet</button><button class="button">Focus</button></div></div>
+          </div>
+          <div class="token-table">
+            <div class="token-row"><b>--surface-app</b><span>#f3f2eb</span></div>
+            <div class="token-row"><b>--action-primary</b><span>#557b67</span></div>
+            <div class="token-row"><b>--reader-bg</b><span>#fbfaf3</span></div>
+          </div>
+        </article>
+
+        <article class="palette oxide">
+          <div class="palette-head">
+            <div class="meta">
+              <span class="tag">Literary</span>
+              <span class="tag">Warm</span>
+            </div>
+            <h2>02. Sepia Oxide Editorial</h2>
+            <p>Bookish sepia with controlled rust and walnut. Strong for fiction, essays, and finished-book polish.</p>
+            <div class="swatches">
+              <span class="swatch" style="--swatch: var(--surface-app); --swatch-text: var(--text-primary)">app</span>
+              <span class="swatch" style="--swatch: var(--surface-panel); --swatch-text: var(--text-primary)">panel</span>
+              <span class="swatch" style="--swatch: var(--text-primary); --swatch-text: #fff">ink</span>
+              <span class="swatch" style="--swatch: var(--text-muted); --swatch-text: #fff">muted</span>
+              <span class="swatch" style="--swatch: var(--action-primary); --swatch-text: #fff">action</span>
+              <span class="swatch" style="--swatch: var(--reader-bg); --swatch-text: var(--reader-text)">reader</span>
+            </div>
+          </div>
+          <div class="preview">
+            <div class="nav"><span class="nav-dot active">H</span><span class="nav-dot">L</span><span class="nav-dot">S</span></div>
+            <div class="dashboard">
+              <div class="card"><span class="cover"></span><div><strong>Continue Reading</strong><span>Chapter 12 - 63%</span></div><span class="more">...</span></div>
+              <div class="reader"><h3>Chapter 40</h3><p>Elizabeth's impatience to acquaint Jane with what had happened could no longer be overcome.</p><span class="line"></span></div>
+            </div>
+            <div class="sheet"><h3>Themes & Settings</h3><button class="button primary">Theme Default</button><div class="controls"><button class="button">Quiet</button><button class="button">Focus</button></div></div>
+          </div>
+          <div class="token-table">
+            <div class="token-row"><b>--surface-app</b><span>#f4eee7</span></div>
+            <div class="token-row"><b>--action-primary</b><span>#8a5a34</span></div>
+            <div class="token-row"><b>--reader-bg</b><span>#fbf3e7</span></div>
+          </div>
+        </article>
+
+        <article class="palette noir">
+          <div class="palette-head">
+            <div class="meta">
+              <span class="tag">Sharpest UI</span>
+              <span class="tag">Neutral</span>
+            </div>
+            <h2>03. Ink Pearl Minimal</h2>
+            <p>Clean pearl surfaces, blue-gray action, and deep ink. Best if you want the dashboard to feel more product-grade.</p>
+            <div class="swatches">
+              <span class="swatch" style="--swatch: var(--surface-app); --swatch-text: var(--text-primary)">app</span>
+              <span class="swatch" style="--swatch: var(--surface-panel); --swatch-text: var(--text-primary)">panel</span>
+              <span class="swatch" style="--swatch: var(--text-primary); --swatch-text: #fff">ink</span>
+              <span class="swatch" style="--swatch: var(--text-muted); --swatch-text: #fff">muted</span>
+              <span class="swatch" style="--swatch: var(--action-primary); --swatch-text: #fff">action</span>
+              <span class="swatch" style="--swatch: var(--reader-bg); --swatch-text: var(--reader-text)">reader</span>
+            </div>
+          </div>
+          <div class="preview">
+            <div class="nav"><span class="nav-dot active">H</span><span class="nav-dot">L</span><span class="nav-dot">S</span></div>
+            <div class="dashboard">
+              <div class="card"><span class="cover"></span><div><strong>Continue Reading</strong><span>Chapter 12 - 63%</span></div><span class="more">...</span></div>
+              <div class="reader"><h3>Chapter 40</h3><p>Elizabeth's impatience to acquaint Jane with what had happened could no longer be overcome.</p><span class="line"></span></div>
+            </div>
+            <div class="sheet"><h3>Themes & Settings</h3><button class="button primary">Theme Default</button><div class="controls"><button class="button">Quiet</button><button class="button">Focus</button></div></div>
+          </div>
+          <div class="token-table">
+            <div class="token-row"><b>--surface-app</b><span>#f3f3ef</span></div>
+            <div class="token-row"><b>--action-primary</b><span>#415c73</span></div>
+            <div class="token-row"><b>--reader-bg</b><span>#fcfbf7</span></div>
+          </div>
+        </article>
+
+        <article class="palette rose">
+          <div class="palette-head">
+            <div class="meta">
+              <span class="tag">Emotional</span>
+              <span class="tag">Soft</span>
+            </div>
+            <h2>04. Rosewood Manuscript</h2>
+            <p>Dusty rose, warm white, and muted plum. Strong for a romantic/literary reading atmosphere without becoming pink-heavy.</p>
+            <div class="swatches">
+              <span class="swatch" style="--swatch: var(--surface-app); --swatch-text: var(--text-primary)">app</span>
+              <span class="swatch" style="--swatch: var(--surface-panel); --swatch-text: var(--text-primary)">panel</span>
+              <span class="swatch" style="--swatch: var(--text-primary); --swatch-text: #fff">ink</span>
+              <span class="swatch" style="--swatch: var(--text-muted); --swatch-text: #fff">muted</span>
+              <span class="swatch" style="--swatch: var(--action-primary); --swatch-text: #fff">action</span>
+              <span class="swatch" style="--swatch: var(--reader-bg); --swatch-text: var(--reader-text)">reader</span>
+            </div>
+          </div>
+          <div class="preview">
+            <div class="nav"><span class="nav-dot active">H</span><span class="nav-dot">L</span><span class="nav-dot">S</span></div>
+            <div class="dashboard">
+              <div class="card"><span class="cover"></span><div><strong>Continue Reading</strong><span>Chapter 12 - 63%</span></div><span class="more">...</span></div>
+              <div class="reader"><h3>Chapter 40</h3><p>Elizabeth's impatience to acquaint Jane with what had happened could no longer be overcome.</p><span class="line"></span></div>
+            </div>
+            <div class="sheet"><h3>Themes & Settings</h3><button class="button primary">Theme Default</button><div class="controls"><button class="button">Quiet</button><button class="button">Focus</button></div></div>
+          </div>
+          <div class="token-table">
+            <div class="token-row"><b>--surface-app</b><span>#f6efed</span></div>
+            <div class="token-row"><b>--action-primary</b><span>#7b5e6c</span></div>
+            <div class="token-row"><b>--reader-bg</b><span>#fff8f5</span></div>
+          </div>
+        </article>
+
+        <article class="palette dusk">
+          <div class="palette-head">
+            <div class="meta">
+              <span class="tag">Dark mode</span>
+              <span class="tag">Night reader</span>
+            </div>
+            <h2>05. Olive Dusk Night</h2>
+            <p>Low-glare olive charcoal with parchment text. Best as a dedicated Quiet/Night theme, not the default homepage.</p>
+            <div class="swatches">
+              <span class="swatch" style="--swatch: var(--surface-app); --swatch-text: var(--text-primary)">app</span>
+              <span class="swatch" style="--swatch: var(--surface-panel); --swatch-text: var(--text-primary)">panel</span>
+              <span class="swatch" style="--swatch: var(--text-primary); --swatch-text: #111">ink</span>
+              <span class="swatch" style="--swatch: var(--text-muted); --swatch-text: #111">muted</span>
+              <span class="swatch" style="--swatch: var(--action-primary); --swatch-text: #111">action</span>
+              <span class="swatch" style="--swatch: var(--reader-bg); --swatch-text: var(--reader-text)">reader</span>
+            </div>
+          </div>
+          <div class="preview">
+            <div class="nav"><span class="nav-dot active">H</span><span class="nav-dot">L</span><span class="nav-dot">S</span></div>
+            <div class="dashboard">
+              <div class="card"><span class="cover"></span><div><strong>Continue Reading</strong><span>Chapter 12 - 63%</span></div><span class="more">...</span></div>
+              <div class="reader"><h3>Chapter 40</h3><p>Elizabeth's impatience to acquaint Jane with what had happened could no longer be overcome.</p><span class="line"></span></div>
+            </div>
+            <div class="sheet"><h3>Themes & Settings</h3><button class="button primary">Theme Default</button><div class="controls"><button class="button">Quiet</button><button class="button">Focus</button></div></div>
+          </div>
+          <div class="token-table">
+            <div class="token-row"><b>--surface-app</b><span>#262722</span></div>
+            <div class="token-row"><b>--action-primary</b><span>#a7b890</span></div>
+            <div class="token-row"><b>--reader-bg</b><span>#2f302a</span></div>
+          </div>
+        </article>
+
+        <article class="palette marine">
+          <div class="palette-head">
+            <div class="meta">
+              <span class="tag">Fresh</span>
+              <span class="tag">Cool calm</span>
+            </div>
+            <h2>06. Marine Mist Study</h2>
+            <p>Soft green-blue neutrals with teal action. Useful if the app should feel more study tool than literary salon.</p>
+            <div class="swatches">
+              <span class="swatch" style="--swatch: var(--surface-app); --swatch-text: var(--text-primary)">app</span>
+              <span class="swatch" style="--swatch: var(--surface-panel); --swatch-text: var(--text-primary)">panel</span>
+              <span class="swatch" style="--swatch: var(--text-primary); --swatch-text: #fff">ink</span>
+              <span class="swatch" style="--swatch: var(--text-muted); --swatch-text: #fff">muted</span>
+              <span class="swatch" style="--swatch: var(--action-primary); --swatch-text: #fff">action</span>
+              <span class="swatch" style="--swatch: var(--reader-bg); --swatch-text: var(--reader-text)">reader</span>
+            </div>
+          </div>
+          <div class="preview">
+            <div class="nav"><span class="nav-dot active">H</span><span class="nav-dot">L</span><span class="nav-dot">S</span></div>
+            <div class="dashboard">
+              <div class="card"><span class="cover"></span><div><strong>Continue Reading</strong><span>Chapter 12 - 63%</span></div><span class="more">...</span></div>
+              <div class="reader"><h3>Chapter 40</h3><p>Elizabeth's impatience to acquaint Jane with what had happened could no longer be overcome.</p><span class="line"></span></div>
+            </div>
+            <div class="sheet"><h3>Themes & Settings</h3><button class="button primary">Theme Default</button><div class="controls"><button class="button">Quiet</button><button class="button">Focus</button></div></div>
+          </div>
+          <div class="token-table">
+            <div class="token-row"><b>--surface-app</b><span>#edf2f1</span></div>
+            <div class="token-row"><b>--action-primary</b><span>#426f74</span></div>
+            <div class="token-row"><b>--reader-bg</b><span>#f8fcfa</span></div>
+          </div>
+        </article>
+      </section>
+
+      <footer>
+        Recommended shortlist: <strong>Digital Sage Library</strong> for the default app, <strong>Sepia Oxide Editorial</strong>
+        if the reader should feel more like a finished novel, and <strong>Olive Dusk Night</strong> as the dedicated Quiet/Night theme.
+        Research used: current UI trend notes emphasize warm neutrals, muted colors, and less saturated accent systems; platform guidance
+        still prioritizes consistent color meaning and sufficient contrast.
+      </footer>
+    </main>
+  </body>
+</html>

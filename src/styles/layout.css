@@ -1,0 +1,52 @@
+.app-shell {
+  min-height: var(--generated-length-100dvh);
+  color: var(--app-ink);
+  background:
+    linear-gradient(180deg, var(--surface-app-wash), transparent var(--generated-length-280px)),
+    var(--app-bg);
+  padding-bottom: calc(var(--space-23) + var(--safe-bottom));
+}
+
+.screen {
+  width: min(100%, var(--generated-length-1120px));
+  margin: 0 auto;
+  padding: var(--space-8-5) var(--space-5-5) 0;
+}
+
+.screen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4-5);
+  margin-bottom: var(--space-6);
+}
+
+.screen-header h1 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: var(--text-heading-lg);
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.screen-header p,
+.section-title-row p,
+.library-card p,
+.year-summary span {
+  margin: var(--space-1) 0 0;
+  color: var(--app-muted);
+  line-height: 1.35;
+}
+
+@media (max-width: 700px) {
+  .screen {
+    padding-inline: var(--space-4-5);
+  }
+}
+
+@media (min-width: 900px) {
+  .app-shell {
+    padding-left: var(--space-23);
+    padding-bottom: 0;
+  }
+}
