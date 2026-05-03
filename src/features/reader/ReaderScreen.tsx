@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, List, RotateCcw, RotateCw, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, List, X } from 'lucide-react';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import type { CSSProperties, MutableRefObject, PointerEvent } from 'react';
@@ -12,12 +12,15 @@ import { ThemeSettingsSheet } from './ThemeSettingsSheet';
 
 const LINE_GUIDE_MIN = 10;
 const LINE_GUIDE_MAX = 78;
+const LINE_GUIDE_ANCHOR_TOLERANCE = 1;
 const CHROME_INITIAL_VISIBLE_MS = 2200;
 const CHROME_REVEAL_VISIBLE_MS = 3500;
 const READER_MOTION_RESET_MS = 340;
 const PAGINATION_HEIGHT_BUFFER = 8;
 const READER_CHROME_ICON_SIZE = 16;
 const READER_MENU_ICON_SIZE = 16;
+const READER_TAP_MOVE_TOLERANCE = 24;
+const CHROME_REVEAL_ZONE_RATIO = 0.18;
 
 type ReaderTurnDirection = 'none' | 'next' | 'previous';
 
@@ -41,15 +44,14 @@ interface ReaderScreenProps {
 
 export function ReaderScreen({ item, initialLocation, preferences, onClose, onProgressChange, onPreferencesChange }: ReaderScreenProps) {
   const [location, setLocation] = useState<ReaderLocation>(initialLocation || { chapterIndex: 0, pageIndex: 0 });
-  const [backStack, setBackStack] = useState<ReaderLocation[]>([]);
-  const [forwardStack, setForwardStack] = useState<ReaderLocation[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [readerChromeVisible, setReaderChromeVisible] = useState(true);
+  const [readerChromeVisible, setReaderChromeVisible] = useState(false);
   const [readerTurnDirection, setReaderTurnDirection] = useState<ReaderTurnDirection>('none');
   const [readerMotionKey, setReaderMotionKey] = useState(0);
   const [readerViewport, setReaderViewport] = useState<ReaderViewport>(() => getReaderViewport());
   const [measuredPagination, setMeasuredPagination] = useState<{ signature: string; pages: PageChunk[] } | null>(null);
+  const [lineGuideAnchors, setLineGuideAnchors] = useState<number[]>([]);
   const swipeStart = useRef<{ x: number; y: number } | null>(null);
   const chromeTimer = useRef<number | null>(null);
   const turnResetTimer = useRef<number | null>(null);
@@ -57,19 +59,20 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
   const paginationMeasureRef = useRef<HTMLDivElement | null>(null);
 
   const chapter = item.content[Math.min(location.chapterIndex, item.content.length - 1)] || item.content[0];
+  const effectivePageTurnMode = getEffectivePageTurnMode(preferences.pageTurnMode);
   const charsPerPage = estimateCharsPerPage(preferences.fontSize, preferences.lineHeight, preferences.marginScale, readerViewport);
   const estimatedPages = useMemo(() => {
-    if (preferences.pageTurnMode === 'scroll') {
+    if (effectivePageTurnMode === 'scroll') {
       return [{ html: chapter.content, plainText: chapter.title }];
     }
 
     return paginateHtml(chapter.content, charsPerPage);
-  }, [chapter, charsPerPage, preferences.pageTurnMode]);
+  }, [chapter, charsPerPage, effectivePageTurnMode]);
   const paginationSignature = useMemo(
     () =>
       [
         chapter.content,
-        preferences.pageTurnMode,
+        effectivePageTurnMode,
         preferences.fontSize,
         preferences.fontFamily,
         preferences.lineHeight,
@@ -84,6 +87,7 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
       ].join('|'),
     [
       chapter.content,
+      effectivePageTurnMode,
       preferences.boldText,
       preferences.characterSpacing,
       preferences.fontFamily,
@@ -92,7 +96,6 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
       preferences.lineHeight,
       preferences.marginScale,
       preferences.orientationLock,
-      preferences.pageTurnMode,
       preferences.wordSpacing,
       readerViewport.height,
       readerViewport.width
@@ -111,7 +114,7 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
   const readerShellClassName = [
     'reader-shell',
     `orientation-${preferences.orientationLock}`,
-    `turn-${preferences.pageTurnMode}`,
+    `turn-${effectivePageTurnMode}`,
     preferences.boldText ? 'reader-bold' : '',
     `font-${preferences.fontFamily}`,
     preferences.justifyText ? 'reader-justify' : '',
@@ -143,8 +146,10 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
       return;
     }
 
-    revealReaderChrome(CHROME_INITIAL_VISIBLE_MS);
-  }, [location.chapterIndex, safePageIndex, menuOpen, settingsOpen]);
+    if (readerChromeVisible) {
+      scheduleChromeHide(CHROME_INITIAL_VISIBLE_MS);
+    }
+  }, [location.chapterIndex, safePageIndex, menuOpen, readerChromeVisible, settingsOpen]);
 
   useEffect(() => {
     const updateReaderViewport = () => setReaderViewport(getReaderViewport());
@@ -170,7 +175,7 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
   }, [location.pageIndex, safePageIndex]);
 
   useLayoutEffect(() => {
-    if (preferences.pageTurnMode === 'scroll') return;
+    if (effectivePageTurnMode === 'scroll') return;
 
     const pageElement = readerPageRef.current;
     const measureElement = paginationMeasureRef.current;
@@ -186,7 +191,45 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
 
       return { signature: paginationSignature, pages: measured };
     });
-  }, [chapter.content, paginationSignature, preferences.pageTurnMode]);
+  }, [chapter.content, effectivePageTurnMode, paginationSignature]);
+
+  useLayoutEffect(() => {
+    if (!preferences.lineGuideEnabled || !lineGuideAvailable) {
+      setLineGuideAnchors([]);
+      return;
+    }
+
+    const anchors = measureLineGuideAnchors(readerPageRef.current);
+    setLineGuideAnchors((current) => (areNumberListsEqual(current, anchors) ? current : anchors));
+  }, [
+    chapter.content,
+    chromeExpanded,
+    lineGuideAvailable,
+    location.chapterIndex,
+    page?.html,
+    preferences.boldText,
+    preferences.characterSpacing,
+    preferences.fontFamily,
+    preferences.fontSize,
+    preferences.justifyText,
+    preferences.lineGuideEnabled,
+    preferences.lineHeight,
+    preferences.marginScale,
+    preferences.wordSpacing,
+    readerViewport.height,
+    readerViewport.width,
+    safePageIndex
+  ]);
+
+  useEffect(() => {
+    if (!preferences.lineGuideEnabled || !lineGuideAnchors.length) return;
+
+    const currentPosition = clampLineGuidePosition(preferences.lineGuidePosition);
+    const isOnMeasuredLine = lineGuideAnchors.some((anchor) => Math.abs(anchor - currentPosition) <= LINE_GUIDE_ANCHOR_TOLERANCE);
+    if (!isOnMeasuredLine) {
+      onPreferencesChange({ lineGuidePosition: lineGuideAnchors[0] });
+    }
+  }, [lineGuideAnchors, onPreferencesChange, preferences.lineGuideEnabled, preferences.lineGuidePosition]);
 
   useEffect(() => {
     onProgressChange({ chapterIndex: location.chapterIndex, pageIndex: safePageIndex }, percent);
@@ -204,22 +247,16 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
     return () => window.removeEventListener('keydown', handleKeyDown);
   });
 
-  function navigateTo(next: ReaderLocation, recordHistory = true, explicitDirection?: ReaderTurnDirection) {
+  function navigateTo(next: ReaderLocation, explicitDirection?: ReaderTurnDirection) {
     const bounded = normalizeLocation(next, item.content.length);
     if (isSameLocation(location, bounded)) return;
 
     const direction = explicitDirection || getTurnDirection(location, bounded);
-    const shouldAnimate = direction !== 'none' && preferences.pageTurnMode !== 'scroll' && !prefersReducedMotion();
+    const shouldAnimate = direction !== 'none' && effectivePageTurnMode !== 'scroll' && !prefersReducedMotion();
 
     const updateLocation = () => {
       setReaderTurnDirection(shouldAnimate ? direction : 'none');
       setReaderMotionKey((key) => key + 1);
-
-      if (recordHistory) {
-        setBackStack((stack) => [...stack.slice(-24), location]);
-        setForwardStack([]);
-      }
-
       setLocation(bounded);
     };
 
@@ -228,11 +265,11 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
       return;
     }
 
-    runReaderViewTransition(updateLocation, direction, preferences.pageTurnMode, scheduleTurnReset);
+    runReaderViewTransition(updateLocation, direction, effectivePageTurnMode, scheduleTurnReset);
   }
 
   function goNext() {
-    if (preferences.pageTurnMode !== 'scroll' && safePageIndex < pages.length - 1) {
+    if (effectivePageTurnMode !== 'scroll' && safePageIndex < pages.length - 1) {
       navigateTo({ chapterIndex: location.chapterIndex, pageIndex: safePageIndex + 1 });
       return;
     }
@@ -243,7 +280,7 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
   }
 
   function goPrevious() {
-    if (preferences.pageTurnMode !== 'scroll' && safePageIndex > 0) {
+    if (effectivePageTurnMode !== 'scroll' && safePageIndex > 0) {
       navigateTo({ chapterIndex: location.chapterIndex, pageIndex: safePageIndex - 1 });
       return;
     }
@@ -251,42 +288,6 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
     if (location.chapterIndex > 0) {
       navigateTo({ chapterIndex: location.chapterIndex - 1, pageIndex: 0 });
     }
-  }
-
-  function goBackLocation() {
-    const previous = backStack[backStack.length - 1];
-    if (!previous) return;
-    const direction = getTurnDirection(location, previous);
-    setBackStack((stack) => stack.slice(0, -1));
-    setForwardStack((stack) => [location, ...stack].slice(0, 24));
-    runReaderViewTransition(
-      () => {
-        setReaderTurnDirection(preferences.pageTurnMode === 'scroll' || prefersReducedMotion() ? 'none' : direction);
-        setReaderMotionKey((key) => key + 1);
-        setLocation(previous);
-      },
-      direction,
-      preferences.pageTurnMode,
-      scheduleTurnReset
-    );
-  }
-
-  function goForwardLocation() {
-    const next = forwardStack[0];
-    if (!next) return;
-    const direction = getTurnDirection(location, next);
-    setForwardStack((stack) => stack.slice(1));
-    setBackStack((stack) => [...stack, location].slice(-24));
-    runReaderViewTransition(
-      () => {
-        setReaderTurnDirection(preferences.pageTurnMode === 'scroll' || prefersReducedMotion() ? 'none' : direction);
-        setReaderMotionKey((key) => key + 1);
-        setLocation(next);
-      },
-      direction,
-      preferences.pageTurnMode,
-      scheduleTurnReset
-    );
   }
 
   function scheduleTurnReset(delay = READER_MOTION_RESET_MS) {
@@ -321,13 +322,30 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
     }, delay);
   }
 
+  function stepLineGuide(direction: 'next' | 'previous') {
+    const currentPosition = clampLineGuidePosition(preferences.lineGuidePosition);
+
+    if (!lineGuideAnchors.length) {
+      onPreferencesChange({ lineGuidePosition: clampLineGuidePosition(currentPosition + (direction === 'next' ? 5 : -5)) });
+      return;
+    }
+
+    const nextAnchor =
+      direction === 'next'
+        ? lineGuideAnchors.find((anchor) => anchor > currentPosition + LINE_GUIDE_ANCHOR_TOLERANCE) || lineGuideAnchors[0]
+        : [...lineGuideAnchors].reverse().find((anchor) => anchor < currentPosition - LINE_GUIDE_ANCHOR_TOLERANCE) || lineGuideAnchors[lineGuideAnchors.length - 1];
+
+    onPreferencesChange({ lineGuidePosition: nextAnchor });
+  }
+
   function handleTap(event: PointerEvent<HTMLDivElement>) {
-    if (Math.abs((event.clientX || 0) - (swipeStart.current?.x || event.clientX || 0)) > 24) return;
+    if (Math.abs((event.clientX || 0) - (swipeStart.current?.x || event.clientX || 0)) > READER_TAP_MOVE_TOLERANCE) return;
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const isTopRevealZone = y < rect.height * 0.18;
-    const isBottomRevealZone = y > rect.height * 0.82;
+
+    const isTopRevealZone = y < rect.height * CHROME_REVEAL_ZONE_RATIO;
+    const isBottomRevealZone = y > rect.height * (1 - CHROME_REVEAL_ZONE_RATIO);
 
     if (isTopRevealZone || isBottomRevealZone) {
       revealReaderChrome();
@@ -335,16 +353,19 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
     }
 
     if (preferences.lineGuideEnabled) {
-      onPreferencesChange({ lineGuidePosition: clampLineGuidePosition((y / rect.height) * 100) });
+      stepLineGuide('next');
       return;
     }
 
     if (x < rect.width * 0.28) {
+      hideReaderChrome();
       if (preferences.bothMarginsAdvance) goNext();
       else goPrevious();
+      return;
     }
 
     if (x > rect.width * 0.72) {
+      hideReaderChrome();
       goNext();
       return;
     }
@@ -358,6 +379,7 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
     const dy = event.clientY - swipeStart.current.y;
 
     if (Math.abs(dx) > 58 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      hideReaderChrome();
       if (dx < 0) goNext();
       else goPrevious();
       swipeStart.current = null;
@@ -385,14 +407,9 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
       style={readerStyle}
     >
       <header className="reader-topbar">
-        {chromeExpanded && (
-          <IconButton label="Go back to previous reading location" variant="filled" disabled={!backStack.length} onClick={goBackLocation}>
-            <RotateCcw size={READER_CHROME_ICON_SIZE} />
-          </IconButton>
-        )}
         <div className="reader-position">
           <strong>{isCover ? item.title : chapter.title}</strong>
-          {chromeExpanded && <span>{preferences.pageTurnMode === 'scroll' ? `${percent}% read` : `${pagesLeft} pages left in chapter`}</span>}
+          {chromeExpanded && <span>{effectivePageTurnMode === 'scroll' ? `${percent}% read` : `${pagesLeft} pages left in chapter`}</span>}
         </div>
         {chromeExpanded && (
           <div className="reader-top-actions">
@@ -400,9 +417,6 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
               <List size={READER_MENU_ICON_SIZE} aria-hidden="true" />
               <span>Menu</span>
             </button>
-            <IconButton label="Go forward to current reading location" variant="filled" disabled={!forwardStack.length} onClick={goForwardLocation}>
-              <RotateCw size={READER_CHROME_ICON_SIZE} />
-            </IconButton>
             <IconButton label="Close book" variant="filled" onClick={onClose}>
               <X size={READER_CHROME_ICON_SIZE} />
             </IconButton>
@@ -426,9 +440,9 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
           lang="en"
         >
           <div className="reader-page-inner" dangerouslySetInnerHTML={{ __html: page.html }} />
-          {preferences.pageTurnMode !== 'scroll' && <div ref={paginationMeasureRef} className="reader-page-inner reader-pagination-measure" aria-hidden="true" />}
+          {effectivePageTurnMode !== 'scroll' && <div ref={paginationMeasureRef} className="reader-page-inner reader-pagination-measure" aria-hidden="true" />}
         </article>
-        {lineGuideAvailable && <LineGuideOverlay preferences={preferences} onChange={onPreferencesChange} />}
+        {lineGuideAvailable && <LineGuideOverlay preferences={preferences} lineGuideAnchors={lineGuideAnchors} onChange={onPreferencesChange} onStep={stepLineGuide} />}
       </section>
 
       {chromeExpanded && (
@@ -437,7 +451,7 @@ export function ReaderScreen({ item, initialLocation, preferences, onClose, onPr
             <ArrowLeft size={READER_CHROME_ICON_SIZE} />
           </IconButton>
           <div className="reader-page-count">
-            {preferences.pageTurnMode === 'scroll' ? `${location.chapterIndex + 1} of ${item.content.length}` : `${safePageIndex + 1} of ${pages.length}`}
+            {effectivePageTurnMode === 'scroll' ? `${location.chapterIndex + 1} of ${item.content.length}` : `${safePageIndex + 1} of ${pages.length}`}
           </div>
           <IconButton label="Open reader menu" className="reader-mobile-menu-button" variant="filled" onClick={() => setMenuOpen(true)}>
             <List size={READER_MENU_ICON_SIZE} />
@@ -492,6 +506,10 @@ function arePageChunksEqual(left: PageChunk[], right: PageChunk[]) {
   return left.length === right.length && left.every((page, index) => page.html === right[index]?.html);
 }
 
+function areNumberListsEqual(left: number[], right: number[]) {
+  return left.length === right.length && left.every((value, index) => Math.abs(value - right[index]) <= LINE_GUIDE_ANCHOR_TOLERANCE);
+}
+
 function clearChromeTimer(timer: MutableRefObject<number | null>) {
   if (!timer.current) return;
   window.clearTimeout(timer.current);
@@ -500,6 +518,50 @@ function clearChromeTimer(timer: MutableRefObject<number | null>) {
 
 function clampLineGuidePosition(position: number): number {
   return Math.max(LINE_GUIDE_MIN, Math.min(LINE_GUIDE_MAX, position));
+}
+
+function getEffectivePageTurnMode(mode: ReaderPreferences['pageTurnMode']): Extract<ReaderPreferences['pageTurnMode'], 'fade' | 'scroll'> {
+  return mode === 'scroll' ? 'scroll' : 'fade';
+}
+
+function measureLineGuideAnchors(pageElement: HTMLElement | null): number[] {
+  const stageElement = pageElement?.closest<HTMLElement>('.reader-stage');
+  const textElement = pageElement?.querySelector<HTMLElement>('.reader-page-inner:not(.reader-pagination-measure)');
+  if (!stageElement || !textElement) return [];
+
+  const stageRect = stageElement.getBoundingClientRect();
+  if (!stageRect.height) return [];
+
+  const lineCenters: number[] = [];
+  const walker = document.createTreeWalker(textElement, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      return node.textContent?.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }
+  });
+
+  while (walker.nextNode()) {
+    const range = document.createRange();
+    range.selectNodeContents(walker.currentNode);
+
+    for (const rect of Array.from(range.getClientRects())) {
+      if (rect.width < 1 || rect.height < 1) continue;
+      const center = ((rect.top + rect.height / 2 - stageRect.top) / stageRect.height) * 100;
+      const clampedCenter = clampLineGuidePosition(center);
+      if (Math.abs(clampedCenter - center) <= LINE_GUIDE_ANCHOR_TOLERANCE) {
+        lineCenters.push(clampedCenter);
+      }
+    }
+  }
+
+  return lineCenters
+    .sort((left, right) => left - right)
+    .reduce<number[]>((anchors, center) => {
+      const previous = anchors[anchors.length - 1];
+      if (previous === undefined || Math.abs(center - previous) > LINE_GUIDE_ANCHOR_TOLERANCE) {
+        anchors.push(center);
+      }
+      return anchors;
+    }, []);
 }
 
 function runReaderViewTransition(updateLocation: () => void, direction: ReaderTurnDirection, mode: ReaderPreferences['pageTurnMode'], onFinished: (delay?: number) => void) {

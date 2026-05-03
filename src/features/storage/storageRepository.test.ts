@@ -88,6 +88,17 @@ describe('storage repository', () => {
 
     expect(loaded.preferences.colorPalette).toBe('marine');
   });
+
+  it('normalizes legacy curl page turns to fast fade', () => {
+    const storage = new MemoryStorage();
+    const state = createInitialState(items);
+    state.preferences.pageTurnMode = 'curl';
+
+    saveAppState(state, storage);
+    const loaded = loadAppState(items, storage);
+
+    expect(loaded.preferences.pageTurnMode).toBe('fade');
+  });
 });
 
 class MemoryStorage implements Storage {

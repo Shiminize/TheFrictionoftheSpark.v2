@@ -20,6 +20,7 @@ interface ReaderMenuSheetProps {
 const QUICK_MENU_CLOSE_DELAY_MS = 190;
 const QUICK_MENU_ICON_SIZE = 16;
 const QUICK_MENU_ROW_ICON_SIZE = 18;
+const LINE_GUIDE_START_POSITION = 10;
 
 type ReaderMenuMode = 'main' | 'contents' | 'search';
 
@@ -115,7 +116,14 @@ export function ReaderMenuSheet({
                 className={preferences.lineGuideEnabled ? 'reader-quick-icon-button active' : 'reader-quick-icon-button'}
                 aria-label={preferences.lineGuideEnabled ? 'Turn line guide off' : 'Turn line guide on'}
                 title={preferences.lineGuideEnabled ? 'Line guide on' : 'Line guide'}
-                onClick={() => onPreferencesChange({ lineGuideEnabled: !preferences.lineGuideEnabled })}
+                onClick={() => {
+                  const lineGuideEnabled = !preferences.lineGuideEnabled;
+                  onPreferencesChange({
+                    lineGuideEnabled,
+                    ...(lineGuideEnabled ? { lineGuidePosition: LINE_GUIDE_START_POSITION } : {})
+                  });
+                  requestClose();
+                }}
               >
                 <TextCursorInput size={QUICK_MENU_ICON_SIZE} aria-hidden="true" />
               </button>

@@ -37,8 +37,17 @@ const fontOptions: { value: ReaderPreferences['fontFamily']; label: string }[] =
 
 const SETTINGS_ICON_SIZE = 16;
 const SETTINGS_TYPE_ICON_SIZE = 18;
+const FONT_SIZE_MIN = 16;
+const FONT_SIZE_MAX = 28;
+const FONT_SIZE_DOTS = 10;
+const pageTurnOptions: { value: Extract<ReaderPreferences['pageTurnMode'], 'fade' | 'scroll'>; label: string }[] = [
+  { value: 'fade', label: 'Fast Fade' },
+  { value: 'scroll', label: 'Scroll' }
+];
 
 export function ThemeSettingsSheet({ preferences, onChange, onClose }: ThemeSettingsSheetProps) {
+  const fontSizeLevel = getFontSizeLevel(preferences.fontSize);
+
   return (
     <Sheet title="Themes & Settings" titleId="theme-settings-title" className="settings-sheet" closeLabel="Close themes and settings" onClose={onClose}>
         <section className="settings-section" aria-labelledby="color-palette-heading">
@@ -67,15 +76,22 @@ export function ThemeSettingsSheet({ preferences, onChange, onClose }: ThemeSett
           </div>
         </section>
 
-        <div className="segmented-control" aria-label="Font size">
-          <button type="button" aria-label="Decrease font size" onClick={() => onChange({ fontSize: Math.max(16, preferences.fontSize - 1) })}>
-            <Minus size={SETTINGS_ICON_SIZE} aria-hidden="true" />
-            <Type size={SETTINGS_ICON_SIZE} aria-hidden="true" />
-          </button>
-          <button type="button" aria-label="Increase font size" onClick={() => onChange({ fontSize: Math.min(28, preferences.fontSize + 1) })}>
-            <Plus size={SETTINGS_ICON_SIZE} aria-hidden="true" />
-            <Type size={SETTINGS_TYPE_ICON_SIZE} aria-hidden="true" />
-          </button>
+        <div className="font-size-control">
+          <div className="segmented-control font-size-stepper" aria-label="Font size">
+            <button type="button" aria-label="Decrease font size" onClick={() => onChange({ fontSize: Math.max(FONT_SIZE_MIN, preferences.fontSize - 1) })}>
+              <Minus size={SETTINGS_ICON_SIZE} aria-hidden="true" />
+              <Type size={SETTINGS_ICON_SIZE} aria-hidden="true" />
+            </button>
+            <button type="button" aria-label="Increase font size" onClick={() => onChange({ fontSize: Math.min(FONT_SIZE_MAX, preferences.fontSize + 1) })}>
+              <Plus size={SETTINGS_ICON_SIZE} aria-hidden="true" />
+              <Type size={SETTINGS_TYPE_ICON_SIZE} aria-hidden="true" />
+            </button>
+          </div>
+          <div className="font-size-dots" aria-label={`Font size level ${fontSizeLevel} of ${FONT_SIZE_DOTS}`}>
+            {Array.from({ length: FONT_SIZE_DOTS }, (_, index) => (
+              <span key={index} className={index < fontSizeLevel ? 'font-size-dot filled' : 'font-size-dot'} />
+            ))}
+          </div>
         </div>
 
         <div className="setting-row">
@@ -93,16 +109,12 @@ export function ThemeSettingsSheet({ preferences, onChange, onClose }: ThemeSett
         </div>
 
         <div className="page-turn-row" aria-label="Page turn style">
-          {[
-            ['curl', 'Curl'],
-            ['fade', 'Fast Fade'],
-            ['scroll', 'Scroll']
-          ].map(([value, label]) => (
+          {pageTurnOptions.map(({ value, label }) => (
             <button
               key={value}
               type="button"
-              className={preferences.pageTurnMode === value ? 'page-turn-button active' : 'page-turn-button'}
-              onClick={() => onChange({ pageTurnMode: value as ReaderPreferences['pageTurnMode'] })}
+              className={preferences.pageTurnMode === value || (preferences.pageTurnMode === 'curl' && value === 'fade') ? 'page-turn-button active' : 'page-turn-button'}
+              onClick={() => onChange({ pageTurnMode: value })}
             >
               <FileText size={SETTINGS_ICON_SIZE} aria-hidden="true" />
               {label}
@@ -183,4 +195,9 @@ export function ThemeSettingsSheet({ preferences, onChange, onClose }: ThemeSett
         </details>
     </Sheet>
   );
+}
+
+function getFontSizeLevel(fontSize: number) {
+  const normalized = (Math.max(FONT_SIZE_MIN, Math.min(FONT_SIZE_MAX, fontSize)) - FONT_SIZE_MIN) / (FONT_SIZE_MAX - FONT_SIZE_MIN);
+  return Math.max(1, Math.min(FONT_SIZE_DOTS, Math.round(normalized * (FONT_SIZE_DOTS - 1)) + 1));
 }

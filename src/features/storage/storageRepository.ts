@@ -3,6 +3,7 @@ import type {
   Collection,
   ColorPalette,
   LibraryItem,
+  PageTurnMode,
   ReaderFontFamily,
   ReaderPreferences,
   ReadingGoal,
@@ -14,6 +15,7 @@ const STORAGE_KEY = 'friction-reader-state-v1';
 const STATE_VERSION = 1;
 const readerFontFamilies = new Set<ReaderFontFamily>(['theme', 'literata', 'source-serif', 'atkinson', 'georgia', 'palatino']);
 const colorPalettes = new Set<ColorPalette>(['sage', 'oxide', 'noir', 'rose', 'dusk', 'marine']);
+const pageTurnModes = new Set<PageTurnMode>(['fade', 'scroll']);
 
 interface StoredState {
   version: number;
@@ -153,7 +155,8 @@ function normalizePreferences(preferences: Partial<ReaderPreferences> | undefine
   return {
     ...merged,
     colorPalette: normalizeColorPalette(merged.colorPalette),
-    fontFamily: normalizeReaderFontFamily(merged.fontFamily)
+    fontFamily: normalizeReaderFontFamily(merged.fontFamily),
+    pageTurnMode: normalizePageTurnMode(merged.pageTurnMode)
   };
 }
 
@@ -170,6 +173,13 @@ function normalizeReaderFontFamily(fontFamily: unknown): ReaderFontFamily {
     return fontFamily as ReaderFontFamily;
   }
   return defaultPreferences.fontFamily;
+}
+
+function normalizePageTurnMode(pageTurnMode: unknown): PageTurnMode {
+  if (typeof pageTurnMode === 'string' && pageTurnModes.has(pageTurnMode as PageTurnMode)) {
+    return pageTurnMode as PageTurnMode;
+  }
+  return defaultPreferences.pageTurnMode;
 }
 
 export function updateSystemCollections(collections: Collection[], progress: Record<string, ReadingProgress>): Collection[] {
