@@ -35,12 +35,15 @@ const fontOptions: { value: ReaderPreferences['fontFamily']; label: string }[] =
   { value: 'palatino', label: 'Palatino' }
 ];
 
+const SETTINGS_ICON_SIZE = 16;
+const SETTINGS_TYPE_ICON_SIZE = 18;
+
 export function ThemeSettingsSheet({ preferences, onChange, onClose }: ThemeSettingsSheetProps) {
   return (
     <Sheet title="Themes & Settings" titleId="theme-settings-title" className="settings-sheet" closeLabel="Close themes and settings" onClose={onClose}>
         <section className="settings-section" aria-labelledby="color-palette-heading">
           <div className="settings-section-label" id="color-palette-heading">
-            <Palette size={18} aria-hidden="true" />
+            <Palette size={SETTINGS_ICON_SIZE} aria-hidden="true" />
             <span>Color Palette</span>
           </div>
           <div className="palette-grid">
@@ -66,17 +69,17 @@ export function ThemeSettingsSheet({ preferences, onChange, onClose }: ThemeSett
 
         <div className="segmented-control" aria-label="Font size">
           <button type="button" aria-label="Decrease font size" onClick={() => onChange({ fontSize: Math.max(16, preferences.fontSize - 1) })}>
-            <Minus size={18} aria-hidden="true" />
-            <Type size={18} aria-hidden="true" />
+            <Minus size={SETTINGS_ICON_SIZE} aria-hidden="true" />
+            <Type size={SETTINGS_ICON_SIZE} aria-hidden="true" />
           </button>
           <button type="button" aria-label="Increase font size" onClick={() => onChange({ fontSize: Math.min(28, preferences.fontSize + 1) })}>
-            <Plus size={18} aria-hidden="true" />
-            <Type size={24} aria-hidden="true" />
+            <Plus size={SETTINGS_ICON_SIZE} aria-hidden="true" />
+            <Type size={SETTINGS_TYPE_ICON_SIZE} aria-hidden="true" />
           </button>
         </div>
 
         <div className="setting-row">
-          <Sun size={20} aria-hidden="true" />
+          <Sun size={SETTINGS_ICON_SIZE} aria-hidden="true" />
           <input
             aria-label="Brightness"
             name="brightness"
@@ -101,7 +104,7 @@ export function ThemeSettingsSheet({ preferences, onChange, onClose }: ThemeSett
               className={preferences.pageTurnMode === value ? 'page-turn-button active' : 'page-turn-button'}
               onClick={() => onChange({ pageTurnMode: value as ReaderPreferences['pageTurnMode'] })}
             >
-              <FileText size={18} aria-hidden="true" />
+              <FileText size={SETTINGS_ICON_SIZE} aria-hidden="true" />
               {label}
             </button>
           ))}
@@ -109,7 +112,7 @@ export function ThemeSettingsSheet({ preferences, onChange, onClose }: ThemeSett
 
         <section className="settings-section" aria-labelledby="page-theme-heading">
           <div className="settings-section-label" id="page-theme-heading">
-            <Type size={18} aria-hidden="true" />
+            <Type size={SETTINGS_ICON_SIZE} aria-hidden="true" />
             <span>Page Theme</span>
           </div>
           <div className="theme-grid">
@@ -130,9 +133,9 @@ export function ThemeSettingsSheet({ preferences, onChange, onClose }: ThemeSett
 
         <details className="customize-panel" open>
           <summary>
-            <Type size={18} aria-hidden="true" />
+            <Type size={SETTINGS_ICON_SIZE} aria-hidden="true" />
             Customize
-            <ChevronDown size={18} aria-hidden="true" />
+            <ChevronDown size={SETTINGS_ICON_SIZE} aria-hidden="true" />
           </summary>
 
           <div className="customize-grid">
@@ -148,7 +151,7 @@ export function ThemeSettingsSheet({ preferences, onChange, onClose }: ThemeSett
             </label>
 
             <button type="button" className={preferences.boldText ? 'toggle-button active' : 'toggle-button'} onClick={() => onChange({ boldText: !preferences.boldText })}>
-              <Bold size={18} aria-hidden="true" />
+              <Bold size={SETTINGS_ICON_SIZE} aria-hidden="true" />
               Bold Text
             </button>
 
@@ -173,7 +176,7 @@ export function ThemeSettingsSheet({ preferences, onChange, onClose }: ThemeSett
             </label>
 
             <button type="button" className={preferences.justifyText ? 'toggle-button active' : 'toggle-button'} onClick={() => onChange({ justifyText: !preferences.justifyText })}>
-              <AlignJustify size={18} aria-hidden="true" />
+              <AlignJustify size={SETTINGS_ICON_SIZE} aria-hidden="true" />
               Justify Text
             </button>
           </div>

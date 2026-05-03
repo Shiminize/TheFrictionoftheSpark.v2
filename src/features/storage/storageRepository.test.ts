@@ -32,6 +32,12 @@ describe('storage repository', () => {
     expect(loaded.progress.book.status).toBe('reading');
   });
 
+  it('defaults reader font to Palatino', () => {
+    const state = createInitialState(items);
+
+    expect(state.preferences.fontFamily).toBe('palatino');
+  });
+
   it('updates system collections when status changes', () => {
     const state = createInitialState(items);
     const next = setItemStatus(state, 'book', 'finished');
@@ -39,7 +45,7 @@ describe('storage repository', () => {
     expect(next.collections.find((collection) => collection.id === 'finished')?.itemIds).toContain('book');
   });
 
-  it('migrates the old original font preference to theme defaults', () => {
+  it('migrates the old original font preference to the default font', () => {
     const storage = new MemoryStorage();
     const state = createInitialState(items);
     (state.preferences as { fontFamily: string }).fontFamily = 'original';
@@ -47,7 +53,7 @@ describe('storage repository', () => {
     saveAppState(state, storage);
     const loaded = loadAppState(items, storage);
 
-    expect(loaded.preferences.fontFamily).toBe('theme');
+    expect(loaded.preferences.fontFamily).toBe('palatino');
   });
 
   it('defaults legacy state without a color palette to sage', () => {

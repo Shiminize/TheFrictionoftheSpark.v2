@@ -259,6 +259,10 @@
   --text-ui-sm: 0.72rem;
   --text-ui-md: 0.82rem;
   --text-ui-lg: 0.88rem;
+  --text-reader-ui-caption: 0.68rem;
+  --text-reader-ui-label: 0.72rem;
+  --text-reader-ui-body: 0.78rem;
+  --text-reader-ui-title: 0.86rem;
   --text-heading-sm: 1.35rem;
   --text-heading-md: 1.7rem;
   --text-heading-lg: 2.25rem;
@@ -363,6 +367,7 @@
   --generated-length-2rem: 2rem;
   --generated-length-520px: 520px;
   --generated-length-82dvh: 82dvh;
+  --generated-length-30dvh: 30dvh;
   --generated-length-96px: 96px;
   --generated-length-284px: 284px;
   --generated-length-36px: 36px;

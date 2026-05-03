@@ -5,6 +5,7 @@
 .library-title-button,
 .pick-card,
 .reader-menu-actions button,
+.menu-row,
 .orientation-button,
 .page-turn-button,
 .search-result,
@@ -25,6 +26,11 @@
   background: transparent;
   color: inherit;
   cursor: pointer;
+  transition:
+    transform var(--reader-motion-duration-short) var(--reader-motion-ease-standard),
+    background-color var(--reader-motion-duration-short) var(--reader-motion-ease-standard),
+    color var(--reader-motion-duration-short) var(--reader-motion-ease-standard),
+    opacity var(--reader-motion-duration-short) var(--reader-motion-ease-standard);
 }
 
 .ui-button-soft {
@@ -79,11 +85,21 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition:
+    transform var(--reader-motion-duration-short) var(--reader-motion-ease-standard),
+    background-color var(--reader-motion-duration-short) var(--reader-motion-ease-standard),
+    color var(--reader-motion-duration-short) var(--reader-motion-ease-standard),
+    opacity var(--reader-motion-duration-short) var(--reader-motion-ease-standard);
 }
 
 .icon-button:disabled {
   cursor: default;
   opacity: 0.38;
+}
+
+.ui-button:not(:disabled):active,
+.icon-button:not(:disabled):active {
+  transform: scale(var(--reader-motion-press-scale));
 }
 
 .icon-button-plain {
@@ -130,6 +146,11 @@
   place-items: center;
   gap: var(--generated-length-1px);
   cursor: pointer;
+  transition:
+    transform var(--reader-motion-duration-short) var(--reader-motion-ease-standard),
+    background-color var(--reader-motion-duration-short) var(--reader-motion-ease-standard),
+    color var(--reader-motion-duration-short) var(--reader-motion-ease-standard),
+    opacity var(--reader-motion-duration-short) var(--reader-motion-ease-standard);
 }
 
 .bottom-nav-item span {
@@ -140,6 +161,10 @@
 .bottom-nav-item.active {
   background: var(--app-ink);
   color: var(--app-surface);
+}
+
+.bottom-nav-item:active {
+  transform: scale(var(--reader-motion-press-scale));
 }
 
 @media (min-width: 900px) {

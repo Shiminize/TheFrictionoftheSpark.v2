@@ -24,7 +24,7 @@ export const defaultPreferences: ReaderPreferences = {
   theme: 'original',
   colorPalette: 'sage',
   fontSize: 18,
-  fontFamily: 'theme',
+  fontFamily: 'palatino',
   boldText: false,
   lineHeight: 1.72,
   characterSpacing: 0,
@@ -165,7 +165,7 @@ function normalizeColorPalette(colorPalette: unknown): ColorPalette {
 }
 
 function normalizeReaderFontFamily(fontFamily: unknown): ReaderFontFamily {
-  if (fontFamily === 'original') return 'theme';
+  if (fontFamily === 'original') return defaultPreferences.fontFamily;
   if (typeof fontFamily === 'string' && readerFontFamilies.has(fontFamily as ReaderFontFamily)) {
     return fontFamily as ReaderFontFamily;
   }
